@@ -2,6 +2,7 @@
 #include <QTableView>
 #include <QDebug>
 #include <QScrollArea>
+#include <QPushButton>
 
 
 #include "dialog.h"
@@ -22,7 +23,7 @@ Dialog::Dialog(int level, QVector<int> nums, int alternatives, QWidget* parent) 
 
 
     // Построение TableView для каждого уровня декомпозиции.
-    for (int i = 0; i <= level; i++)
+    for (int i = 0; i < level; i++)
     {
         QScrollArea* scroll = new QScrollArea(ui->scrollAreaWidgetContents);
         scroll->setWidgetResizable(true);
@@ -31,7 +32,7 @@ Dialog::Dialog(int level, QVector<int> nums, int alternatives, QWidget* parent) 
         scroll->setWidget(widget);
         mainLayout->addWidget(scroll);
 
-        //DEBUG
+        //DEBUG:
         scroll->setObjectName("scroll_" + QString::number(i));
         widget->setObjectName("widget_" + QString::number(i));
         hlayout->setObjectName("hlayout_" + QString::number(i));
@@ -45,11 +46,14 @@ Dialog::Dialog(int level, QVector<int> nums, int alternatives, QWidget* parent) 
         {
             QTableView* table = new QTableView();
             QStandardItemModel* model = new QStandardItemModel(table);
+            model->setRowCount(nums[i]);
+            model->setColumnCount(nums[i]);
             table->setModel(model);
             table->setMinimumWidth(250);
             hlayout->addWidget(table);
 
-            //DEBUG
+
+            //DEBUG:
             model->setObjectName("model_" + tr("%1_%2").arg(i).arg(j));
             table->setObjectName("table_" + tr("%1_%2").arg(i).arg(j));
         }
@@ -57,10 +61,33 @@ Dialog::Dialog(int level, QVector<int> nums, int alternatives, QWidget* parent) 
 
 
 
+    // TableView c матрицами для альтернатив
+    QScrollArea* scroll = new QScrollArea(ui->scrollAreaWidgetContents);
+    scroll->setWidgetResizable(true);
+    QWidget* widget = new QWidget();
+    QHBoxLayout* hlayout = new QHBoxLayout(widget);
+    scroll->setWidget(widget);
+    mainLayout->addWidget(scroll);
+
+    int tables = 1;
+    for (int n : nums)
+        tables *= n;
+
+    for (int i = 0; i < tables; i++)
+    {
+        QTableView* table = new QTableView();
+        QStandardItemModel* model = new QStandardItemModel(table);
+        model->setRowCount(alternatives);
+        model->setColumnCount(alternatives);
+        table->setModel(model);
+        table->setMinimumWidth(250);
+        hlayout->addWidget(table);
+    }
 
 
-
+    mainLayout->addWidget(new QPushButton("Расчитать", this));
 }
+
 
 
 Dialog::~Dialog()

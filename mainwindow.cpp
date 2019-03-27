@@ -40,6 +40,7 @@ void MainWindow::on_addButton_clicked()
 }
 
 
+// TODO переписать этот метод, чтобы без перезагрузки
 void MainWindow::on_resetButton_clicked()
 {
     qApp->quit();
