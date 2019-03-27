@@ -27,11 +27,13 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-        dialog.cpp
+        dialog.cpp \
+        spinboxdelegate.cpp
 
 HEADERS += \
         mainwindow.h \
-        dialog.h
+        dialog.h \
+        spinboxdelegate.h
 
 FORMS += \
         mainwindow.ui \

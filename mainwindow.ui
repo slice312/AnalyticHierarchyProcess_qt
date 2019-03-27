@@ -46,7 +46,11 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QSpinBox" name="spin1"/>
+         <widget class="QSpinBox" name="spin1">
+          <property name="value">
+           <number>2</number>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -74,7 +78,7 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>140</x>
@@ -92,7 +96,11 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QSpinBox" name="altsSpin"/>
+      <widget class="QSpinBox" name="altsSpin">
+       <property name="value">
+        <number>3</number>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>

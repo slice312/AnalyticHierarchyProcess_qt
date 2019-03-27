@@ -4,9 +4,9 @@
 #include <QScrollArea>
 #include <QPushButton>
 
-
 #include "dialog.h"
 #include "ui_dialog.h"
+#include "spinboxdelegate.h"
 
 
 
@@ -50,6 +50,7 @@ Dialog::Dialog(int level, QVector<int> nums, int alternatives, QWidget* parent) 
             model->setColumnCount(nums[i]);
             table->setModel(model);
             table->setMinimumWidth(250);
+            table->setItemDelegate(new SpinBoxDelegate(this));
             hlayout->addWidget(table);
 
 
@@ -81,6 +82,7 @@ Dialog::Dialog(int level, QVector<int> nums, int alternatives, QWidget* parent) 
         model->setColumnCount(alternatives);
         table->setModel(model);
         table->setMinimumWidth(250);
+        table->setItemDelegate(new SpinBoxDelegate(this));
         hlayout->addWidget(table);
     }
 
