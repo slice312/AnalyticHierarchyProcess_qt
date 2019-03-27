@@ -17,48 +17,47 @@ Dialog::Dialog(int level, QVector<int> nums, int alternatives, QWidget* parent) 
     qDebug() << nums;
 
     QVBoxLayout* mainLayout = new QVBoxLayout(ui->scrollAreaWidgetContents);
-    QScrollArea* scroll = new QScrollArea(ui->scrollAreaWidgetContents);
-    scroll->setWidgetResizable(true);
+
+    mainLayout->setObjectName("mainLayout");
 
 
-    QStandardItemModel* model = new QStandardItemModel();
-    QTableView* table = new QTableView();
-    table->setModel(model);
-
-
-    QWidget* widget = new QWidget();
-    QHBoxLayout* hlayout = new QHBoxLayout(widget);
-    hlayout->addWidget(table);
-    scroll->setWidget(widget);
-    mainLayout->addWidget(scroll);
-
-
-
-    for (int i = 1; i < level; i++)
+    // Построение TableView для каждого уровня декомпозиции.
+    for (int i = 0; i <= level; i++)
     {
-        scroll = new QScrollArea(ui->scrollAreaWidgetContents);
+        QScrollArea* scroll = new QScrollArea(ui->scrollAreaWidgetContents);
         scroll->setWidgetResizable(true);
-        widget = new QWidget();
-        hlayout = new QHBoxLayout(widget);
+        QWidget* widget = new QWidget();
+        QHBoxLayout* hlayout = new QHBoxLayout(widget);
         scroll->setWidget(widget);
         mainLayout->addWidget(scroll);
+
+        //DEBUG
+        scroll->setObjectName("scroll_" + QString::number(i));
+        widget->setObjectName("widget_" + QString::number(i));
+        hlayout->setObjectName("hlayout_" + QString::number(i));
 
 
         int tables = 1;
         for (int n = i - 1; n >= 0; n--)
-        {
             tables *= nums[n];
-        }
 
         for (int j = 0; j < tables; j++)
         {
-            model = new QStandardItemModel();
-            table = new QTableView();
+            QTableView* table = new QTableView();
+            QStandardItemModel* model = new QStandardItemModel(table);
             table->setModel(model);
             table->setMinimumWidth(250);
             hlayout->addWidget(table);
+
+            //DEBUG
+            model->setObjectName("model_" + tr("%1_%2").arg(i).arg(j));
+            table->setObjectName("table_" + tr("%1_%2").arg(i).arg(j));
         }
     }
+
+
+
+
 
 
 }
@@ -66,6 +65,7 @@ Dialog::Dialog(int level, QVector<int> nums, int alternatives, QWidget* parent) 
 
 Dialog::~Dialog()
 {
+    dumpObjectTree();
     qDebug() << "Dialog destroyed";
     delete ui;
 }
