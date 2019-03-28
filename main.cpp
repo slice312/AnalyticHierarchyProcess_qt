@@ -120,15 +120,15 @@ void showSolution_14_1_1()
     int criterias = 2;
     int alternatives = 3;
 
-    log << "Отношение: Мартин, Джейн";
+    log << "РћС‚РЅРѕС€РµРЅРёРµ: РњР°СЂС‚РёРЅ, Р”Р¶РµР№РЅ";
     matrix<double> lvl1(criterias1, criterias1);
     std::string str = "1    1 "
                       "1    1 ";
     stream.str(str);
     fill(lvl1, stream);
 
-    //Мартин оценил соотношение: местоположение, репутация
-    matrix<double> lvl2_1(criterias2, criterias2); //местоположение
+    //РњР°СЂС‚РёРЅ РѕС†РµРЅРёР» СЃРѕРѕС‚РЅРѕС€РµРЅРёРµ: РјРµСЃС‚РѕРїРѕР»РѕР¶РµРЅРёРµ, СЂРµРїСѓС‚Р°С†РёСЏ
+    matrix<double> lvl2_1(criterias2, criterias2); //РјРµСЃС‚РѕРїРѕР»РѕР¶РµРЅРёРµ
     str = "1  0.2 "
           "5    1 ";
     stream.str(str);
