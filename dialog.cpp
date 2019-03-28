@@ -3,6 +3,7 @@
 #include <QScrollArea>
 #include <QPushButton>
 #include <QHeaderView>
+#include <QScrollBar>
 
 #include "dialog.h"
 #include "ui_dialog.h"
@@ -20,7 +21,10 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
     qDebug() << nums;
 
     QVBoxLayout* mainLayout = new QVBoxLayout(ui->scrollAreaWidgetContents);
+    ui->scrollAreaWidgetContents->setLayout(mainLayout);
+
     mainLayout->setObjectName("mainLayout");
+
     QVector<QTableView*> vector;
 
 
@@ -52,10 +56,9 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
             QStandardItemModel* model = new QStandardItemModel(table);
             model->setRowCount(nums[i]);
             model->setColumnCount(nums[i]);
-//            model->set
-
             table->setModel(model);
             table->setMinimumWidth(250);
+            table->setMinimumHeight(200);
             table->setItemDelegate(new SpinBoxDelegate(this));
             hlayout->addWidget(table);
             vector.push_back(table);
@@ -88,7 +91,8 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
         model->setRowCount(alternatives);
         model->setColumnCount(alternatives);
         table->setModel(model);
-        table->setMinimumWidth(250);
+//        table->setMinimumHeight(300);
+        table->setMinimumWidth(300);
         table->setItemDelegate(new SpinBoxDelegate(this));
         hlayout->addWidget(table);
         vector.push_back(table);
@@ -96,10 +100,18 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
 
     this->vecTables.push_back(vector);
 
+    // TODO переписать
+    mainLayout->setStretch(3, 20);
+    mainLayout->setStretch(0, 11);
+    mainLayout->setStretch(1, 16);
+    mainLayout->setStretch(2, 16);
+
 
 
     mainLayout->addWidget(new QPushButton("Расчитать", this));
 }
+
+
 
 
 
@@ -111,7 +123,7 @@ Dialog::~Dialog()
 }
 
 
-
+// TODO дописать
 void Dialog::setTitles(int level, const QString&)
 {
     for (auto i : vecTables[level])
@@ -133,17 +145,42 @@ void Dialog::defaultValue()
             SpinBoxDelegate* delegate = dynamic_cast<SpinBoxDelegate*>(table->itemDelegate());
             QAbstractItemModel* model = table->model();
 
-            for (int col = 0; col < model->rowCount(); col++)
+            for (int col = 0; col < model->columnCount(); col++)
             {
                 QModelIndex index = model->index(col, col);
                 model->setData(index, 1);
-                table->horizontalHeader()->resizeSection(col, 60);
                 delegate->lockIndex(index);
+                table->horizontalHeader()->resizeSection(col, 60);
+                table->verticalHeader()->resizeSection(col, 25);
             }
         }
     }
 }
 
+
+
+QList<double> Dialog::calculate()
+{
+    for (QVector<QTableView*> vector : vecTables)
+    {
+        for (QTableView* table : vector)
+        {
+            QAbstractItemModel* model = table->model();
+
+            for (int row = 0; row < model->rowCount(); row++)
+            {
+                for (int col = 0; col < model->columnCount(); col++)
+                {
+                    QModelIndex index = model->index(row, col);
+                    QVariant var = model->data(index);
+                    qDebug() << var.toInt();
+                }
+
+            }
+        }
+    }
+    return QList<double>();
+}
 
 
 

@@ -20,7 +20,7 @@ class MainWindow : public QMainWindow
 
 private:
     Ui::MainWindow* ui;
-    QVector<QPair<QLabel*, QSpinBox*>> spins;
+    QVector<QSpinBox*> spins;
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
@@ -30,6 +30,7 @@ private slots:
     void on_addButton_clicked();
     void on_resetButton_clicked();
     void on_okButton_clicked();
+    void on_altsSpin_valueChanged(int value);
 };
 
 

@@ -1,5 +1,7 @@
 #include <QProcess>
 #include <QDebug>
+#include <QLineEdit>
+#include <QSpinBox>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -14,7 +16,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
     ui->scrollArea->setMinimumHeight(150);
     ui->label1->setMinimumWidth(150);
 
-    spins.push_back(QPair<QLabel*, QSpinBox*>(ui->label1, ui->spin1));
+    spins.push_back(ui->spin1);
 }
 
 
@@ -32,8 +34,9 @@ void MainWindow::on_addButton_clicked()
     str += QString::number(ui->column->rowCount() + 1);
     str += "  критерии";
 
-    spins.push_back(QPair<QLabel*, QSpinBox*>(new QLabel(str), new QSpinBox()));
-    ui->column->addRow(spins.back().first, spins.back().second);
+    QSpinBox* newSpin = new QSpinBox();
+    ui->column->addRow(new QLabel(str), newSpin);
+    spins.push_back(newSpin);
 }
 
 
@@ -50,13 +53,36 @@ void MainWindow::on_resetButton_clicked()
 void MainWindow::on_okButton_clicked()
 {
     QVector<int> vec;
-    for (QPair<QLabel*, QSpinBox*> pair : spins)
-        vec.push_back(pair.second->value());
+    for (QSpinBox* spin : spins)
+        vec.push_back(spin->value());
 
     Dialog wgt(vec, ui->altsSpin->value());
     wgt.defaultValue();
+    wgt.calculate();
 
     wgt.setModal(true);
     wgt.setMinimumSize(800, 600);
     wgt.exec();
+}
+
+
+
+void MainWindow::on_altsSpin_valueChanged(int value)
+{
+    QVBoxLayout* layout = ui->altsNameVLayout;
+
+    while (value < layout->count())
+    {
+        QLayoutItem* item = layout->takeAt(layout->count() - 1);
+        QWidget* wgt = item->widget();
+        wgt->hide();
+        layout->removeWidget(wgt);
+        delete wgt;
+    }
+
+    for (int i = layout->count(); i < value; i++)
+    {
+        QLineEdit* lineEdit = new QLineEdit();
+        layout->addWidget(lineEdit);
+    }
 }

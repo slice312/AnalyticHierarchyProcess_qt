@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QVector>
+#include <QList>
 #include <QTableView>
 
 
@@ -30,6 +31,7 @@ public:
 
     void setTitles(int level, const QString& str);
     void defaultValue();
+    QList<double> calculate();
 
 
 
