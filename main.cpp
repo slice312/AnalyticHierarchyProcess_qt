@@ -4,6 +4,7 @@
 #include <QList>
 #include <QtAlgorithms>
 
+#include <functional>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -20,6 +21,75 @@ using matrix = boost::numeric::ublas::matrix<T>;
 
 void showSample();
 void showSolution_14_1_1();
+
+
+QVector<double> calc(QVector<QVector<QVector<double>>> all, int alternatives)
+{
+    QVector<double> result(alternatives);
+
+    int lastLevel = all.size() - 1;
+    std::function<double (int, int, int)> combinedWeighting = [&](int level, int onlvl, int N) -> double
+    {
+        for (int i = level; i <= lastLevel; i++)
+        {
+            for (int vecOnLevel = onlvl; vecOnLevel < all[level].size(); vecOnLevel++)
+            {
+                if (level == lastLevel)
+                    return all[level][vecOnLevel][N];
+
+                double sum = 0.0;
+                for (int i = 0; i < all[level][vecOnLevel].size(); i++)
+                {
+                    sum += all[level][vecOnLevel][i] * combinedWeighting(level + 1, vecOnLevel * 2 + i, N);
+                }
+                return sum;
+            }
+        }
+
+        return -0.2;
+    };
+
+    result.push_back(combinedWeighting(0, 0, 0));
+    result.push_back(combinedWeighting(0, 0, 1));
+    result.push_back(combinedWeighting(0, 0, 2));
+    qDebug() << "RESULT " << result;
+
+    double max = *std::max_element(result.begin(), result.end());
+
+    return result;
+}
+
+
+
+
+
+
+
+double calc(QVector<QVector<double>> left, QVector<QVector<double>> right, int index)
+{
+    double sum = 0.0;
+    for (int i = 0; i < left[index].size(); i++)
+    {
+        sum += left[index][i] * calc(left, right, index + 1);
+    }
+
+    //    for (int i = 0; i < vec[index].size(); i++)
+    //    {
+    //        sum += left[index][i] * calc(right, index + 1);
+    //    }
+
+    return sum;
+
+    //    vec[index][0] * return + vec[index] * return
+}
+
+
+void foo()
+{
+    QVector<QVector<double>> vec;
+    //   calc(vec, 0);
+}
+
 
 
 
@@ -58,7 +128,7 @@ void show(const matrix<T>& m)
     for (uint row = 0; row < m.size1(); row++)
     {
         for (uint col = 0; col < m.size2(); col++)
-            std::cout << m(row, col) << "  ";
+            std::cout << std::setw(3) << m(row, col) << "  ";
         std::cout << '\n';
     }
 }
@@ -92,9 +162,11 @@ int main(int argc, char* argv[])
     QCoreApplication app(argc, argv);
     using std::cout, std::endl;
 
-    #define log qDebug() << fixed << qSetRealNumberPrecision(3)
+#define log qDebug() << fixed << qSetRealNumberPrecision(3)
 
     showSolution_14_1_1();
+    cout << "\n\n\n\n\n\n";
+    showSample();
 
 
 
@@ -109,80 +181,200 @@ void showSolution_14_1_1()
 {
 
 #define log qDebug() << fixed << qSetRealNumberPrecision(3)
+#define Log(x) qDebug() << fixed << qSetRealNumberPrecision(x)
 #define s QString()+
     using std::cout, std::endl;
     cout << std::setprecision(3);
 
     std::istringstream stream;
 
-    int criterias1 = 2;
-    int criterias2 = 2;
-    int criterias = 2;
-    int alternatives = 3;
+    const int criterias1 = 2;
+    const int criterias2 = 2;
+    const int alternatives = 3;
 
-    log << "–û—Ç–Ω–æ—à–µ–Ω–∏–µ: –ú–∞—Ä—Ç–∏–Ω, –î–∂–µ–π–Ω";
+
+    cout << "---------------------------------ì‡Æ¢•≠Ï 1---------------------------------------\n";
+
+    cout << "é‚≠ÆË•≠®•: å†‡‚®≠, Ñ¶•©≠" << endl;
     matrix<double> lvl1(criterias1, criterias1);
     std::string str = "1    1 "
                       "1    1 ";
     stream.str(str);
     fill(lvl1, stream);
+    show(lvl1);
+    normalize(lvl1);
+    QVector<double> vLvl1 = avrRows(lvl1);
+    Log(2) << vLvl1;
+    cout << endl;
 
-    //–ú–∞—Ä—Ç–∏–Ω –æ—Ü–µ–Ω–∏–ª —Å–æ–æ—Ç–Ω–æ—à–µ–Ω–∏–µ: –º–µ—Å—Ç–æ–ø–æ–ª–æ–∂–µ–Ω–∏–µ, —Ä–µ–ø—É—Ç–∞—Ü–∏—è
-    matrix<double> lvl2_1(criterias2, criterias2); //–º–µ—Å—Ç–æ–ø–æ–ª–æ–∂–µ–Ω–∏–µ
+
+
+    cout << "\n\n\n---------------------------------ì‡Æ¢•≠Ï 2---------------------------------------\n";
+
+
+    cout << "å†‡‚®≠ ÆÊ•≠®´ Æ‚≠ÆË•≠®•: ¨•·‚ÆØÆ´Æ¶•≠®•, ‡•Ø„‚†Ê®Ô" << endl;
+    matrix<double> lvl2_1(criterias2, criterias2);
     str = "1  0.2 "
           "5    1 ";
     stream.str(str);
     fill(lvl2_1, stream);
-
-
-    show(lvl1);
-    cout << endl;
     show(lvl2_1);
-    cout << endl;
-
-
-
-    cout << "\nNORMALIZATION\n";
-    normalize(lvl1);
     normalize(lvl2_1);
-
-    show(lvl1);
-    cout << endl;
-    show(lvl2_1);
+    QVector<double> vLvl2_1 = avrRows(lvl2_1);
+    Log(2) << vLvl2_1;
     cout << endl;
 
 
-//    cout << "\nAVR ROWS\n";
-//    QVector<double> vLvl1 = avrRows(lvl1);
 
-//    QVector<double> vLvl2_1 = avrRows(lvl2_1);
-//    QVector<double> vLvl2_2 = avrRows(lvl2_2);
-
-
-//    log << vLvl1;
-//    log << vLvl2_1;
-//    log << vLvl2_2;
-
-//    QVector<QVector<double>> alts;
-//    alts.push_back(vLvl2_1);
-//    alts.push_back(vLvl2_2);
+    cout << "Ñ¶•©≠ ÆÊ•≠®´† Æ‚≠ÆË•≠®•: ¨•·‚ÆØÆ´Æ¶•≠®•, ‡•Ø„‚†Ê®Ô" << endl;
+    matrix<double> lvl2_2(criterias2, criterias2);
+    str = "1     0.42 "
+          "2.33     1 ";
+    stream.str(str);
+    fill(lvl2_2, stream);
+    show(lvl2_2);
+    normalize(lvl2_2);
+    QVector<double> vLvl2_2 = avrRows(lvl2_2);
+    Log(2) << vLvl2_2;
+    cout << endl;
 
 
-//    QVector<double> result(alternatives);
 
-//    for (int i = 0; i < alternatives; i++)
-//    {
-//        for (int j = 0; j < criterias; ++j)
-//        {
-//            result[i] += vLvl1[j] * alts[j][i];
-//        }
-//    }
-//    log << "\nRESULT";
-//    log << result;
-//    log << *std::max_element(result.begin(), result.end());
+
+    cout << "\n\n\n--------------------------------ì‡Æ¢•≠Ï 3 (†´Ï‚•‡≠†‚®¢Î)---------------------------------------\n";
+    cout << "å†‡‚®≠ ÆÊ•≠®´ Æ‚≠ÆË•≠®• „≠®¢•‡Æ¢ ØÆ ¨•·‚ÆØÆ´Æ¶•≠®Ó" << endl;
+    matrix<double> lvl3_1(alternatives, alternatives);
+    str = "1   0.5  0.2 "
+          "2   1    0.5 "
+          "5   2      1 ";
+    stream.str(str);
+    fill(lvl3_1, stream);
+    show(lvl3_1);
+    normalize(lvl3_1);
+    QVector<double> vLvl3_1 = avrRows(lvl3_1);
+    Log(3) << vLvl3_1;
+    cout << endl;
+
+    cout << "å†‡‚®≠ ÆÊ•≠®´ Æ‚≠ÆË•≠®• „≠®¢•‡Æ¢ ØÆ ‡•Ø„‚†Ê®®" << endl;
+    matrix<double> lvl3_2(alternatives, alternatives);
+    str = "1           2        3 "
+          "0.5         1      1.5 "
+          "0.333   0.666        1 ";
+    stream.str(str);
+    fill(lvl3_2, stream);
+    show(lvl3_2);
+    normalize(lvl3_2);
+    QVector<double> vLvl3_2 = avrRows(lvl3_2);
+    Log(3) << vLvl3_2;
+    cout << endl;
+
+
+    cout << "\n------------\n";
+
+
+    cout << "Ñ¶•©≠ ÆÊ•≠®´† Æ‚≠ÆË•≠®• „≠®¢•‡Æ¢ ØÆ ¨•·‚ÆØÆ´Æ¶•≠®Ó" << endl;
+    matrix<double> lvl3_3(alternatives, alternatives);
+    str = "1     0.66    0.4 "
+          "1.5    1      0.6 "
+          "2.5   1.66      1 ";
+    stream.str(str);
+    fill(lvl3_3, stream);
+    show(lvl3_3);
+    normalize(lvl3_3);
+    QVector<double> vLvl3_3 = avrRows(lvl3_3);
+    Log(1) << vLvl3_3;
+    cout << endl;
+
+    cout << "Ñ¶•©≠ ÆÊ•≠®´† Æ‚≠ÆË•≠®• „≠®¢•‡Æ¢ ØÆ ‡•Ø„‚†Ê®®" << endl;
+    matrix<double> lvl3_4(alternatives, alternatives);
+    str = "1     2.5    1.66 "
+          "0.4   1      0.66 "
+          "0.6   1.5      1 ";
+    stream.str(str);
+    fill(lvl3_4, stream);
+    show(lvl3_4);
+    normalize(lvl3_4);
+    QVector<double> vLvl3_4 = avrRows(lvl3_4);
+    Log(1) << vLvl3_4;
+    cout << endl;
+
+
+    cout << "\n\n\n AVR ROWS" << endl;
+    log << "\t" << vLvl1;
+    log << "" << vLvl2_1;
+    log << "\t\t" << vLvl2_2;
+    log << "" << vLvl3_1;
+    log << "" << vLvl3_2;
+    log << "\t\t" << vLvl3_3;
+    log << "\t\t" << vLvl3_4;
+
+
+    QVector<QVector<double>> alts;
+    alts.push_back(vLvl3_1);
+    alts.push_back(vLvl3_2);
+    alts.push_back(vLvl3_3);
+    alts.push_back(vLvl3_4);
+
+
+    QVector<QVector<QVector<double>>> all;
+
+    QVector<QVector<double>> vectorLVL_1;
+    vectorLVL_1.push_back(vLvl1);
+
+    all.push_back(vectorLVL_1);
+
+    QVector<QVector<double>> vectorLVL_2;
+    vectorLVL_2.push_back(vLvl2_1);
+    vectorLVL_2.push_back(vLvl2_2);
+
+    all.push_back(vectorLVL_2);
+
+    QVector<QVector<double>> vectorLVL_3;
+    vectorLVL_3.push_back(vLvl3_1);
+    vectorLVL_3.push_back(vLvl3_2);
+    vectorLVL_3.push_back(vLvl3_3);
+    vectorLVL_3.push_back(vLvl3_4);
+
+    all.push_back(vectorLVL_3);
+
+
+    log << "ALL LEVEL VECTORS";
+    log << all[0][0];
+    log << all[1][0] << all[1][1];
+    log << all[2][0] << all[2][1] << all[2][2] << all[2][3];
+
+    log << calc(all, 3);
+
+
+
+
+
+    QVector<double> result(alternatives);
+    //    for (int i = 0; i < all[0].size(); i++)
+    //    {
+    //        for (int j = 0; j < all[0][i].size(); j++)
+    //        {
+    //            double dd = all[level][i][j]; //0.5
+    //        }
+    //    }
+
+
+
+
+
+    //    for (int i = 0; i < alternatives; i++)
+    //    {
+    //        for (int j = 0; j < criterias; ++j)
+    //        {
+    //            result[i] += vLvl1[j] * alts[j][i];
+    //        }
+    //    }
+
+    //    log << "\nRESULT";
+    //    log << result;
+    //    log << *std::max_element(result.begin(), result.end());
 
 }
-
 
 
 
