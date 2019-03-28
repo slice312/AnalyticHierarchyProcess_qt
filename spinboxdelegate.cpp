@@ -1,29 +1,44 @@
 #include <QDoubleSpinBox>
 #include <QTableView>
 #include <QDebug>
+#include <QStandardItemModel>
 
 #include "spinboxdelegate.h"
 
 
 SpinBoxDelegate::SpinBoxDelegate(QObject* parent) :
     QItemDelegate(parent)
-{}
+{
+    qDebug() << "DELEGATE CREATED";
+}
+
+
+
+void SpinBoxDelegate::lockIndex(const QModelIndex& index)
+{
+    lockIndexes.push_back(index);
+}
+
 
 
 QWidget* SpinBoxDelegate::createEditor(QWidget* parent,
-    const QStyleOptionViewItem&, const QModelIndex&) const
+    const QStyleOptionViewItem&, const QModelIndex& index) const
 {
     QDoubleSpinBox* doubleSpinBox = new QDoubleSpinBox(parent);
     doubleSpinBox->setMinimum(-1000.0001);
     doubleSpinBox->setMaximum(+1000.0001);
+    doubleSpinBox->setSingleStep(0.25);
 
-    qDebug() << parent;
-
-    QTableView* table = dynamic_cast<QTableView*>(parent);
+    for (QModelIndex ix : lockIndexes)
+    {
+        if (ix == index)
+        {
+            doubleSpinBox->setReadOnly(true);
+            break;
+        }
+    }
 
     qDebug() << __func__;
-    qDebug() << " AFTER CAST " <<  (table == nullptr);
-
     return doubleSpinBox;
 }
 

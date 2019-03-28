@@ -1,15 +1,12 @@
 #include <QProcess>
 #include <QDebug>
 
-#include <memory>
-
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "dialog.h"
 
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -18,14 +15,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->label1->setMinimumWidth(150);
 
     spins.push_back(QPair<QLabel*, QSpinBox*>(ui->label1, ui->spin1));
-    this->level = 1;
 }
+
 
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
+
 
 
 void MainWindow::on_addButton_clicked()
@@ -36,8 +34,8 @@ void MainWindow::on_addButton_clicked()
 
     spins.push_back(QPair<QLabel*, QSpinBox*>(new QLabel(str), new QSpinBox()));
     ui->column->addRow(spins.back().first, spins.back().second);
-    this->level++;
 }
+
 
 
 // TODO переписать этот метод, чтобы без перезагрузки
@@ -48,16 +46,17 @@ void MainWindow::on_resetButton_clicked()
 }
 
 
+
 void MainWindow::on_okButton_clicked()
 {
     QVector<int> vec;
-    for (auto pair : spins)
-    {
+    for (QPair<QLabel*, QSpinBox*> pair : spins)
         vec.push_back(pair.second->value());
-    }
 
-    Dialog wgt(this->level, vec, ui->altsSpin->value());
+    Dialog wgt(vec, ui->altsSpin->value());
+    wgt.defaultValue();
+
     wgt.setModal(true);
-//    wgt.setFixedSize(500, 500);
+    wgt.setMinimumSize(800, 600);
     wgt.exec();
 }

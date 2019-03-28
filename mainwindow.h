@@ -12,18 +12,18 @@ namespace Ui {
 class MainWindow;
 }
 
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow* ui;
     QVector<QPair<QLabel*, QSpinBox*>> spins;
-    int level;
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
 private slots:

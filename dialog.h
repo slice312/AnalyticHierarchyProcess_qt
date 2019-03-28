@@ -1,14 +1,15 @@
-#ifndef DIALOG_H
-#define DIALOG_H
+#ifndef DIALOG_H_INCLUDED
+#define DIALOG_H_INCLUDED
 
 #include <QDialog>
 #include <QVector>
-
+#include <QTableView>
 
 
 namespace Ui {
 class Dialog;
 }
+
 
 class Dialog : public QDialog
 {
@@ -17,13 +18,23 @@ class Dialog : public QDialog
 private:
     Ui::Dialog* ui;
 
+    int levels;
+    int alternatives;
+    QVector<QVector<QTableView*>> vecTables;
+
 
 public:
-    Dialog(int level, QVector<int> nums, int alternatives,
-            QWidget* parent = nullptr);
+    Dialog(QVector<int> nums, int alternatives,
+           QWidget* parent = nullptr);
     ~Dialog();
+
+    void setTitles(int level, const QString& str);
+    void defaultValue();
+
+
+
 
 
 };
 
-#endif // DIALOG_H
+#endif // DIALOG_H_INCLUDED
