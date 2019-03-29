@@ -19,7 +19,7 @@ LIBS += -LC:/boost_1_69_0/boost_mingw_730_64/lib
 
 
 HEADERS += \
-    hierarchyalgorithm.h
+        hierarchyalgorithm.h
 
 
 SOURCES += \

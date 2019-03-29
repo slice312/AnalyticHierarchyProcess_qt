@@ -14,6 +14,8 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
 
+#include "hierarchyalgorithm.h"
+
 
 template<class T>
 using matrix = boost::numeric::ublas::matrix<T>;
@@ -21,12 +23,11 @@ using matrix = boost::numeric::ublas::matrix<T>;
 
 void showSample();
 void showSolution_14_1_1();
+void showSolution_14_1_2_2();
 
 
 QVector<double> calc(QVector<QVector<QVector<double>>> all, int alternatives)
 {
-    QVector<double> result(alternatives);
-
     int lastLevel = all.size() - 1;
     std::function<double (int, int, int)> combinedWeighting = [&](int level, int onlvl, int N) -> double
     {
@@ -49,9 +50,11 @@ QVector<double> calc(QVector<QVector<QVector<double>>> all, int alternatives)
         return -0.2;
     };
 
-    result.push_back(combinedWeighting(0, 0, 0));
-    result.push_back(combinedWeighting(0, 0, 1));
-    result.push_back(combinedWeighting(0, 0, 2));
+    QVector<double> result;
+    for (int alt = 0; alt < alternatives; ++alt) {
+        result.push_back(combinedWeighting(0, 0, alt));
+    }
+    //    result.push_back(combinedWeighting(0, 0, 2));
     qDebug() << "RESULT " << result;
 
     double max = *std::max_element(result.begin(), result.end());
@@ -63,32 +66,6 @@ QVector<double> calc(QVector<QVector<QVector<double>>> all, int alternatives)
 
 
 
-
-
-double calc(QVector<QVector<double>> left, QVector<QVector<double>> right, int index)
-{
-    double sum = 0.0;
-    for (int i = 0; i < left[index].size(); i++)
-    {
-        sum += left[index][i] * calc(left, right, index + 1);
-    }
-
-    //    for (int i = 0; i < vec[index].size(); i++)
-    //    {
-    //        sum += left[index][i] * calc(right, index + 1);
-    //    }
-
-    return sum;
-
-    //    vec[index][0] * return + vec[index] * return
-}
-
-
-void foo()
-{
-    QVector<QVector<double>> vec;
-    //   calc(vec, 0);
-}
 
 
 
@@ -153,6 +130,8 @@ QVector<T> avrRows(matrix<T>& mtx)
 }
 
 
+void showSolution_14_1_2_3();
+
 
 
 
@@ -165,8 +144,13 @@ int main(int argc, char* argv[])
 #define log qDebug() << fixed << qSetRealNumberPrecision(3)
 
     showSolution_14_1_1();
-    cout << "\n\n\n\n\n\n";
-    showSample();
+    //    cout << "\n\n\n\n\n\n";
+    //    showSample();
+
+
+
+    //    showSolution_14_1_2_2();
+    //    showSolution_14_1_2_3();
 
 
 
@@ -183,6 +167,9 @@ void showSolution_14_1_1()
 #define log qDebug() << fixed << qSetRealNumberPrecision(3)
 #define Log(x) qDebug() << fixed << qSetRealNumberPrecision(x)
 #define s QString()+
+
+
+
     using std::cout, std::endl;
     cout << std::setprecision(3);
 
@@ -191,7 +178,7 @@ void showSolution_14_1_1()
     const int criterias1 = 2;
     const int criterias2 = 2;
     const int alternatives = 3;
-
+    HierarchyAlgorithm ahp(alternatives);
 
     cout << "---------------------------------Уровень 1---------------------------------------\n";
 
@@ -201,6 +188,8 @@ void showSolution_14_1_1()
                       "1    1 ";
     stream.str(str);
     fill(lvl1, stream);
+    ahp.addLevel({lvl1});
+
     show(lvl1);
     normalize(lvl1);
     QVector<double> vLvl1 = avrRows(lvl1);
@@ -218,6 +207,8 @@ void showSolution_14_1_1()
           "5    1 ";
     stream.str(str);
     fill(lvl2_1, stream);
+    ahp.addLevel({lvl2_1});
+
     show(lvl2_1);
     normalize(lvl2_1);
     QVector<double> vLvl2_1 = avrRows(lvl2_1);
@@ -232,12 +223,13 @@ void showSolution_14_1_1()
           "2.33     1 ";
     stream.str(str);
     fill(lvl2_2, stream);
+    ahp.addMatrix(2, {lvl2_2});
+
     show(lvl2_2);
     normalize(lvl2_2);
     QVector<double> vLvl2_2 = avrRows(lvl2_2);
     Log(2) << vLvl2_2;
     cout << endl;
-
 
 
 
@@ -249,6 +241,8 @@ void showSolution_14_1_1()
           "5   2      1 ";
     stream.str(str);
     fill(lvl3_1, stream);
+    ahp.addLevel({lvl3_1});
+
     show(lvl3_1);
     normalize(lvl3_1);
     QVector<double> vLvl3_1 = avrRows(lvl3_1);
@@ -262,6 +256,8 @@ void showSolution_14_1_1()
           "0.333   0.666        1 ";
     stream.str(str);
     fill(lvl3_2, stream);
+    ahp.addMatrix(3, {lvl3_2});
+
     show(lvl3_2);
     normalize(lvl3_2);
     QVector<double> vLvl3_2 = avrRows(lvl3_2);
@@ -279,6 +275,8 @@ void showSolution_14_1_1()
           "2.5   1.66      1 ";
     stream.str(str);
     fill(lvl3_3, stream);
+    ahp.addMatrix(3, {lvl3_3});
+
     show(lvl3_3);
     normalize(lvl3_3);
     QVector<double> vLvl3_3 = avrRows(lvl3_3);
@@ -292,6 +290,8 @@ void showSolution_14_1_1()
           "0.6   1.5      1 ";
     stream.str(str);
     fill(lvl3_4, stream);
+    ahp.addMatrix(3, {lvl3_4});
+
     show(lvl3_4);
     normalize(lvl3_4);
     QVector<double> vLvl3_4 = avrRows(lvl3_4);
@@ -315,6 +315,9 @@ void showSolution_14_1_1()
     alts.push_back(vLvl3_3);
     alts.push_back(vLvl3_4);
 
+
+    qDebug() << "TEST---------------------- " << ahp.calculateWeights();
+    qDebug() << ahp.getAnswer();
 
     QVector<QVector<QVector<double>>> all;
 
@@ -379,6 +382,262 @@ void showSolution_14_1_1()
 
 
 
+void showSolution_14_1_2_2()
+{
+#define log qDebug() << fixed << qSetRealNumberPrecision(3)
+#define Log(x) qDebug() << fixed << qSetRealNumberPrecision(x)
+#define s QString()+
+    using std::cout, std::endl;
+    cout << std::setprecision(3);
+
+    std::istringstream stream;
+
+    const int criterias1 = 2;
+    const int criterias2 = 2;
+    const int alternatives = 3;
+
+
+    cout << "---------------------------------Уровень 1---------------------------------------\n";
+
+    cout << "Отношение: Кевин, Джун" << endl;
+    matrix<double> lvl1(criterias1, criterias1);
+    std::string str = "1      1 "
+                      "0.5    1 ";
+    stream.str(str);
+    fill(lvl1, stream);
+    show(lvl1);
+    normalize(lvl1);
+    QVector<double> vLvl1 = avrRows(lvl1);
+    Log(2) << vLvl1;
+    cout << endl;
+
+
+
+    cout << "\n\n\n---------------------------------Уровень 2---------------------------------------\n";
+
+
+    //    cout << "Мартин оценил отношение: местоположение, репутация" << endl;
+    matrix<double> lvl2_1(criterias2, criterias2);
+    str = "1  0.333 "
+          "3    1 ";
+    stream.str(str);
+    fill(lvl2_1, stream);
+    show(lvl2_1);
+    normalize(lvl2_1);
+    QVector<double> vLvl2_1 = avrRows(lvl2_1);
+    Log(2) << vLvl2_1;
+    cout << endl;
+
+
+
+    //    cout << "Джейн оценила отношение: местоположение, репутация" << endl;
+    matrix<double> lvl2_2(criterias2, criterias2);
+    str = "1       4 "
+          "0.25     1 ";
+    stream.str(str);
+    fill(lvl2_2, stream);
+    show(lvl2_2);
+    normalize(lvl2_2);
+    QVector<double> vLvl2_2 = avrRows(lvl2_2);
+    Log(2) << vLvl2_2;
+    cout << endl;
+
+
+
+
+    cout << "\n\n\n--------------------------------Уровень 3 (альтернативы)---------------------------------------\n";
+    //    cout << "Мартин оценил отношение универов по местоположению" << endl;
+    matrix<double> lvl3_1(alternatives, alternatives);
+    str = "1         2    3 "
+          "0.5       1    2 "
+          "0.333   0.5    1 ";
+    stream.str(str);
+    fill(lvl3_1, stream);
+    show(lvl3_1);
+    normalize(lvl3_1);
+    QVector<double> vLvl3_1 = avrRows(lvl3_1);
+    Log(3) << vLvl3_1;
+    cout << endl;
+
+    //    cout << "Мартин оценил отношение универов по репутации" << endl;
+    matrix<double> lvl3_2(alternatives, alternatives);
+    str = "1           2      0.5 "
+          "0.5         1      0.333 "
+          "2           3        1 ";
+    stream.str(str);
+    fill(lvl3_2, stream);
+    show(lvl3_2);
+    normalize(lvl3_2);
+    QVector<double> vLvl3_2 = avrRows(lvl3_2);
+    Log(3) << vLvl3_2;
+    cout << endl;
+
+
+    cout << "\n------------\n";
+
+
+    //    cout << "Джейн оценила отношение универов по местоположению" << endl;
+    matrix<double> lvl3_3(alternatives, alternatives);
+    str = "1       4      2 "
+          "0.25    1      3 "
+          "0.5  0.333     1 ";
+    stream.str(str);
+    fill(lvl3_3, stream);
+    show(lvl3_3);
+    normalize(lvl3_3);
+    QVector<double> vLvl3_3 = avrRows(lvl3_3);
+    Log(1) << vLvl3_3;
+    cout << endl;
+
+    //    cout << "Джейн оценила отношение универов по репутации" << endl;
+    matrix<double> lvl3_4(alternatives, alternatives);
+    str = "   1     0.5    4 "
+          "   2       1    3 "
+          "0.25   0.333    1 ";
+    stream.str(str);
+    fill(lvl3_4, stream);
+    show(lvl3_4);
+    normalize(lvl3_4);
+    QVector<double> vLvl3_4 = avrRows(lvl3_4);
+    Log(1) << vLvl3_4;
+    cout << endl;
+
+
+
+
+
+    QVector<QVector<double>> alts;
+    alts.push_back(vLvl3_1);
+    alts.push_back(vLvl3_2);
+    alts.push_back(vLvl3_3);
+    alts.push_back(vLvl3_4);
+
+
+    QVector<QVector<QVector<double>>> all;
+
+    QVector<QVector<double>> vectorLVL_1;
+    vectorLVL_1.push_back(vLvl1);
+
+    all.push_back(vectorLVL_1);
+
+    QVector<QVector<double>> vectorLVL_2;
+    vectorLVL_2.push_back(vLvl2_1);
+    vectorLVL_2.push_back(vLvl2_2);
+
+    all.push_back(vectorLVL_2);
+
+    QVector<QVector<double>> vectorLVL_3;
+    vectorLVL_3.push_back(vLvl3_1);
+    vectorLVL_3.push_back(vLvl3_2);
+    vectorLVL_3.push_back(vLvl3_3);
+    vectorLVL_3.push_back(vLvl3_4);
+
+    all.push_back(vectorLVL_3);
+
+
+
+    log << calc(all, 3);
+
+}
+
+
+
+
+void showSolution_14_1_2_3()
+{
+#define log qDebug() << fixed << qSetRealNumberPrecision(3)
+#define Log(x) qDebug() << fixed << qSetRealNumberPrecision(x)
+#define s QString()+
+    using std::cout, std::endl;
+    cout << std::setprecision(3);
+
+    std::istringstream stream;
+
+    const int criterias1 = 3;
+    const int alternatives = 2;
+
+
+    cout << "---------------------------------Уровень 1---------------------------------------\n";
+
+    matrix<double> lvl1(criterias1, criterias1);
+    std::string str = "1      1     0.25 "
+                      "1      1      0.2 "
+                      "4      5        1 ";
+
+    stream.str(str);
+    fill(lvl1, stream);
+    show(lvl1);
+    normalize(lvl1);
+    QVector<double> vLvl1 = avrRows(lvl1);
+    Log(2) << vLvl1;
+    cout << endl;
+
+
+
+    cout << "\n\n\n---------------------------------Уровень 2---------------------------------------\n";
+
+
+    //    cout << "Мартин оценил отношение: местоположение, репутация" << endl;
+    matrix<double> lvl2_1(alternatives, alternatives);
+    str = "1      2 "
+          "0.5    1 ";
+    stream.str(str);
+    fill(lvl2_1, stream);
+    show(lvl2_1);
+    normalize(lvl2_1);
+    QVector<double> vLvl2_1 = avrRows(lvl2_1);
+    Log(2) << vLvl2_1;
+    cout << endl;
+
+
+
+    //    cout << "Джейн оценила отношение: местоположение, репутация" << endl;
+    matrix<double> lvl2_2(alternatives, alternatives);
+    str = "1       0.5 "
+          "2     1 ";
+    stream.str(str);
+    fill(lvl2_2, stream);
+    show(lvl2_2);
+    normalize(lvl2_2);
+    QVector<double> vLvl2_2 = avrRows(lvl2_2);
+    Log(2) << vLvl2_2;
+    cout << endl;
+
+
+    matrix<double> lvl2_3(alternatives, alternatives);
+    str = "1       1 "
+          "1     1 ";
+    stream.str(str);
+    fill(lvl2_3, stream);
+    show(lvl2_3);
+    normalize(lvl2_3);
+    QVector<double> vLvl2_3 = avrRows(lvl2_3);
+    Log(2) << vLvl2_3;
+    cout << endl;
+
+
+
+
+
+
+    QVector<QVector<QVector<double>>> all;
+
+    QVector<QVector<double>> vectorLVL_1;
+    vectorLVL_1.push_back(vLvl1);
+
+    all.push_back(vectorLVL_1);
+
+    QVector<QVector<double>> vectorLVL_2;
+    vectorLVL_2.push_back(vLvl2_1);
+    vectorLVL_2.push_back(vLvl2_2);
+    vectorLVL_2.push_back(vLvl2_3);
+
+    all.push_back(vectorLVL_2);
+
+
+    log << calc(all, 2);
+
+}
 
 
 
