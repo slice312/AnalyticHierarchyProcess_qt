@@ -136,7 +136,7 @@ void showSolution_14_1_2_3();
 
 
 
-int main(int argc, char* argv[])
+int nmain(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
     using std::cout, std::endl;

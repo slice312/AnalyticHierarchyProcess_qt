@@ -28,6 +28,7 @@ QWidget* SpinBoxDelegate::createEditor(QWidget* parent,
     doubleSpinBox->setMinimum(-1000.0001);
     doubleSpinBox->setMaximum(+1000.0001);
     doubleSpinBox->setSingleStep(0.25);
+    doubleSpinBox->setDecimals(3);
 
     for (QModelIndex ix : lockIndexes)
     {

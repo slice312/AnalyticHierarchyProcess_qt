@@ -4,11 +4,42 @@
 #include <QPushButton>
 #include <QHeaderView>
 #include <QScrollBar>
+#include <QLabel>
+#include <QTextEdit>
 
 #include "dialog.h"
 #include "ui_dialog.h"
 #include "spinboxdelegate.h"
+#include "hierarchyalgorithm.h"
 
+
+
+Dialog::Dialog(QVector<double> vals, QStringList& list, double max, int index, QWidget* parent):
+    QDialog(parent), ui(new Ui::Dialog)
+{
+    qDebug() << "output";
+    qDebug() << vals.size();
+    qDebug() << list.size();
+    ui->setupUi(this);
+    QVBoxLayout* mainLayout = new QVBoxLayout(ui->scrollAreaWidgetContents);
+    mainLayout->setMargin(20);
+    mainLayout->addWidget(new QLabel("Ответ"));
+
+    QTextEdit* text = new QTextEdit("\n");
+    text->setReadOnly(true);
+
+    text->append("Комбинированные весовые коэффициенты");
+    for (int i = 0; i < vals.size(); i++)
+    {
+        text->append(list[i] + "\t" + QString::number(vals[i]));
+    }
+
+    if (index > 0)
+        text->append("Лучший вариант: \"" + list[index - 1] + "\" \t\t" + QString::number(max));
+    mainLayout->addWidget(text);
+
+
+}
 
 
 
@@ -91,7 +122,7 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
         model->setRowCount(alternatives);
         model->setColumnCount(alternatives);
         table->setModel(model);
-//        table->setMinimumHeight(300);
+        //        table->setMinimumHeight(300);
         table->setMinimumWidth(300);
         table->setItemDelegate(new SpinBoxDelegate(this));
         hlayout->addWidget(table);
@@ -108,7 +139,11 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
 
 
 
-    mainLayout->addWidget(new QPushButton("Расчитать", this));
+    QPushButton* calcButton = new QPushButton("Расчитать", this);
+    mainLayout->addWidget(calcButton);
+    //    calcButton->setChecked(false);
+    calcButton->setDefault(true);
+    connect(calcButton, &QPushButton::clicked, this, &Dialog::calculate);
 }
 
 
@@ -124,14 +159,18 @@ Dialog::~Dialog()
 
 
 // TODO дописать
-void Dialog::setTitles(int level, const QString&)
+void Dialog::setTitles(int level, const QStringList& list)
 {
-    for (auto i : vecTables[level])
+    this->slist = QStringList(list);
+    for (QTableView* table : vecTables[level])
     {
-        dynamic_cast<QStandardItemModel*>(i->model())->
-                setHorizontalHeaderLabels({"a", "b", "C"});
+        QAbstractItemModel* model = table->model();
+        QStandardItemModel* mod = dynamic_cast<QStandardItemModel*>(model);
+        mod->setHorizontalHeaderLabels(list);
+        mod->setVerticalHeaderLabels(list);
     }
 }
+
 
 
 
@@ -161,11 +200,17 @@ void Dialog::defaultValue()
 
 QList<double> Dialog::calculate()
 {
+    qDebug() << "clicked CALCULATE";
+    HierarchyAlgorithm ahp(this->alternatives);
+
+    QList<matrixf> list;
     for (QVector<QTableView*> vector : vecTables)
     {
+        list.clear();
         for (QTableView* table : vector)
         {
             QAbstractItemModel* model = table->model();
+            matrixf mtx(model->rowCount(), model->columnCount());
 
             for (int row = 0; row < model->rowCount(); row++)
             {
@@ -173,12 +218,26 @@ QList<double> Dialog::calculate()
                 {
                     QModelIndex index = model->index(row, col);
                     QVariant var = model->data(index);
-                    qDebug() << var.toInt();
+                    qDebug() << var.toDouble();
+                    mtx(row, col) = var.toDouble();
                 }
-
             }
+            list.push_back(mtx);
         }
+        ahp.addLevel(list);
     }
+
+    qDebug() << ahp.calculateWeights();
+
+    auto pair = ahp.getAnswer();
+    Dialog wgt(ahp.calculateWeights(), this->slist, pair.second, pair.first, this);
+    wgt.defaultValue();
+
+    wgt.setModal(true);
+    wgt.setMinimumSize(300, 200);
+    wgt.exec();
+
+
     return QList<double>();
 }
 

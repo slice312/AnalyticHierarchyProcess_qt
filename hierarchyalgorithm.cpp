@@ -65,6 +65,7 @@ bool HierarchyAlgorithm::addMatrix(int onLevel, const QList<matrixf>& mtxs)
 
 QVector<double> HierarchyAlgorithm::calculateWeights()
 {
+    this->results.clear();
     weights.resize(level);
 
     for (int i = 0; i < list.size(); i++)

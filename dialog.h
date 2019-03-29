@@ -22,14 +22,17 @@ private:
     int levels;
     int alternatives;
     QVector<QVector<QTableView*>> vecTables;
+    QStringList slist;
 
 
 public:
+    Dialog(QVector<double> vals, QStringList& list, double max, int index = 0,
+           QWidget* parent = nullptr);
     Dialog(QVector<int> nums, int alternatives,
            QWidget* parent = nullptr);
     ~Dialog();
 
-    void setTitles(int level, const QString& str);
+    void setTitles(int level, const QStringList& list);
     void defaultValue();
     QList<double> calculate();
 

@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QSpinBox>
+#include <QLineEdit>
 #include <QLabel>
 #include <QVector>
 #include <QPair>
@@ -21,6 +22,8 @@ class MainWindow : public QMainWindow
 private:
     Ui::MainWindow* ui;
     QVector<QSpinBox*> spins;
+    QList<QLineEdit*> lineEdits;
+
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
@@ -31,6 +34,11 @@ private slots:
     void on_resetButton_clicked();
     void on_okButton_clicked();
     void on_altsSpin_valueChanged(int value);
+
+    void fillAltersNames()
+    {
+
+    }
 };
 
 

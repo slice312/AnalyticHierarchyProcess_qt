@@ -56,9 +56,19 @@ void MainWindow::on_okButton_clicked()
     for (QSpinBox* spin : spins)
         vec.push_back(spin->value());
 
+    QStringList list;
+    QVBoxLayout* layout = ui->altsNameVLayout;
+
+    for (int i = 0; i < layout->count(); i++)
+    {
+        auto edit = dynamic_cast<QLineEdit*>(layout->itemAt(i)->widget());
+        list.push_back(edit->text());
+    }
+
+
     Dialog wgt(vec, ui->altsSpin->value());
     wgt.defaultValue();
-    wgt.calculate();
+    wgt.setTitles(vec.size(), list);
 
     wgt.setModal(true);
     wgt.setMinimumSize(800, 600);
