@@ -37,7 +37,7 @@ QPair<int, double> HierarchyAlgorithm::getAnswer() const
             altr = i;
         }
     }
-    return QPair<int, double>(altr + 1, max);
+    return qMakePair(altr + 1, max);
 }
 
 
