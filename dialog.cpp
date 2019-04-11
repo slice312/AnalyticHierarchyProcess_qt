@@ -35,8 +35,8 @@ Dialog::Dialog(QVector<double> vals, QStringList& list, int index, QWidget* pare
         text->append(list[i] + "\t" + QString::number(vals[i]));
     }
 
-    if (index > 0)
-        text->append("Лучший вариант: \"" + list[index - 1] + "\" \t\t" + QString::number(vals[index]));
+    if (index >= 0)
+        text->append("Лучший вариант: \"" + list[index] + "\" \t\t" + QString::number(vals[index]));
     mainLayout->addWidget(text);
 
 
@@ -162,7 +162,8 @@ Dialog::~Dialog()
 // TODO дописать
 void Dialog::setTitles(int level, const QStringList& list)
 {
-    this->slist = QStringList(list);
+    this->slist.push_back(list);
+
     for (QTableView* table : vecTables[level])
     {
         QAbstractItemModel* model = table->model();
@@ -231,7 +232,7 @@ QList<double> Dialog::calculate()
 
     auto pair = ahp.answer();
 
-    Dialog wgt(QVector<double>::fromStdVector(pair.second), this->slist, pair.first, this);
+    Dialog wgt(QVector<double>::fromStdVector(pair.second), this->slist.back(), pair.first, this);
     wgt.defaultValue();
 
     wgt.setModal(true);

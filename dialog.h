@@ -22,7 +22,7 @@ private:
     int levels;
     int alternatives;
     QVector<QVector<QTableView*>> vecTables;
-    QStringList slist;
+    QList<QStringList> slist;
 
 
 public:
@@ -33,10 +33,6 @@ public:
     void setTitles(int level, const QStringList& list);
     void defaultValue();
     QList<double> calculate();
-
-
-
-
 
 };
 

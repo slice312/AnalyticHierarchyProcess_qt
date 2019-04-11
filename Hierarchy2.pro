@@ -21,17 +21,20 @@ SOURCES += \
         dialog.cpp \
         spinboxdelegate.cpp \
         console.cpp \
-        alg_ahp.cpp
+        alg_ahp.cpp \
+    input.cpp
 
 
 HEADERS += \
         mainwindow.h \
         dialog.h \
         spinboxdelegate.h \
-        alg_ahp.h
+        alg_ahp.h \
+    input.h
 
 FORMS += \
         mainwindow.ui \
-        dialog.ui
+        dialog.ui \
+    input.ui
 
 

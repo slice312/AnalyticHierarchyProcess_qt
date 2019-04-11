@@ -21,8 +21,10 @@ class MainWindow : public QMainWindow
 
 private:
     Ui::MainWindow* ui;
-    QVector<QSpinBox*> spins;
+    QList<QSpinBox*> spins;
+    QList<QToolButton*> attachments;
     QList<QLineEdit*> lineEdits;
+    QList<QStringList> critNames;
 
 
 public:
@@ -35,10 +37,9 @@ private slots:
     void on_okButton_clicked();
     void on_altsSpin_valueChanged(int value);
 
-    void fillAltersNames()
-    {
 
-    }
+    void toolButton();
+
 };
 
 

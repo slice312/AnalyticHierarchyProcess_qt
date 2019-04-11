@@ -6,6 +6,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "dialog.h"
+#include "input.h"
 
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
@@ -17,6 +18,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
     ui->label1->setMinimumWidth(150);
 
     spins.push_back(ui->spin1);
+    attachments.push_back(ui->toolbut1);
+
+    connect(ui->toolbut1, SIGNAL(clicked()), this, SLOT(toolButton()));
 }
 
 
@@ -31,12 +35,22 @@ MainWindow::~MainWindow()
 void MainWindow::on_addButton_clicked()
 {
     QString str = "Ур.";
-    str += QString::number(ui->column->rowCount() + 1);
+    int row = ui->criteriaLayout->rowCount();
+    str += QString::number(row + 1);
     str += "  критерии";
 
     QSpinBox* newSpin = new QSpinBox();
-    ui->column->addRow(new QLabel(str), newSpin);
+    QToolButton* toolbut = new QToolButton();
+
+    ui->criteriaLayout->addWidget(new QLabel(str), row, 0, 1, 1);
+    ui->criteriaLayout->addWidget(newSpin, row, 1, 1, 1);
+    ui->criteriaLayout->addWidget(toolbut, row, 2, 1, 1);
+
+    toolbut->setText("...");
+    connect(toolbut, SIGNAL(clicked()), this, SLOT(toolButton()));
+
     spins.push_back(newSpin);
+    attachments.push_back(toolbut);
 }
 
 
@@ -68,6 +82,10 @@ void MainWindow::on_okButton_clicked()
 
     Dialog wgt(vec, ui->altsSpin->value());
     wgt.defaultValue();
+
+
+    for (int i = 0; i < vec.size(); ++i)
+        wgt.setTitles(i, this->critNames[i]);
     wgt.setTitles(vec.size(), list);
 
     wgt.setModal(true);
@@ -95,4 +113,29 @@ void MainWindow::on_altsSpin_valueChanged(int value)
         QLineEdit* lineEdit = new QLineEdit();
         layout->addWidget(lineEdit);
     }
+}
+
+
+
+void MainWindow::toolButton()
+{
+    int index = -1;
+    for (int i = 0; i < attachments.size(); ++i) {
+        if (sender() == attachments[i]) {
+            index = i;
+            break;
+        }
+    }
+
+    input wgt(spins[index], this);
+    wgt.setModal(true);
+    wgt.exec();
+
+    if (this->critNames.size() > index)
+        this->critNames[index] = wgt.give();
+    else
+        this->critNames.push_back(wgt.give());
+
+    qDebug() << critNames[index];
+
 }
