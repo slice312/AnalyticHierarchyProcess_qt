@@ -33,6 +33,11 @@ public:
 private slots:
     void readAll();
 
+    void cance()
+    {
+        readAll();
+    }
+
 };
 
 #endif // INPUT_H

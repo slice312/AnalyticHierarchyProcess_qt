@@ -92,6 +92,7 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
             table->setMinimumWidth(250);
             table->setMinimumHeight(200);
             table->setItemDelegate(new SpinBoxDelegate(this));
+//            hlayout->addWidget(new QLabel(this->slist[i][j]));
             hlayout->addWidget(table);
             vector.push_back(table);
 
@@ -146,7 +147,6 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
     calcButton->setDefault(true);
     connect(calcButton, &QPushButton::clicked, this, &Dialog::calculate);
 }
-
 
 
 

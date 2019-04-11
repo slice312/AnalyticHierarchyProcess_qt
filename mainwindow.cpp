@@ -84,9 +84,12 @@ void MainWindow::on_okButton_clicked()
     wgt.defaultValue();
 
 
-    for (int i = 0; i < vec.size(); ++i)
-        wgt.setTitles(i, this->critNames[i]);
-    wgt.setTitles(vec.size(), list);
+    if (!this->critNames.isEmpty())
+        for (int i = 0; i < vec.size(); ++i)
+            wgt.setTitles(i, this->critNames[i]);
+
+    if (!list.isEmpty())
+        wgt.setTitles(vec.size(), list);
 
     wgt.setModal(true);
     wgt.setMinimumSize(800, 600);
@@ -130,6 +133,7 @@ void MainWindow::toolButton()
     input wgt(spins[index], this);
     wgt.setModal(true);
     wgt.exec();
+
 
     if (this->critNames.size() > index)
         this->critNames[index] = wgt.give();

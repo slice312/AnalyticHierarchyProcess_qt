@@ -17,7 +17,9 @@ input::input(QSpinBox* spin, QWidget *parent) :
     }
 
     QPushButton* buttonOk = ui->buttonBox->button(QDialogButtonBox::Ok);
+    QPushButton* cancel = ui->buttonBox->button(QDialogButtonBox::Cancel);
     connect(buttonOk, SIGNAL(clicked()), this, SLOT(readAll()));
+    connect(cancel, SIGNAL(clicked()), this, SLOT(cance()));
 }
 
 input::~input()
