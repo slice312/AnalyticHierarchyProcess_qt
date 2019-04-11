@@ -10,12 +10,13 @@
 #include "dialog.h"
 #include "ui_dialog.h"
 #include "spinboxdelegate.h"
-#include "hierarchyalgorithm.h"
+#include "alg_ahp.h"
 
 
 
-Dialog::Dialog(QVector<double> vals, QStringList& list, double max, int index, QWidget* parent):
-    QDialog(parent), ui(new Ui::Dialog)
+Dialog::Dialog(QVector<double> vals, QStringList& list, int index, QWidget* parent):
+    QDialog(parent),
+    ui(new Ui::Dialog)
 {
     qDebug() << "output";
     qDebug() << vals.size();
@@ -35,7 +36,7 @@ Dialog::Dialog(QVector<double> vals, QStringList& list, double max, int index, Q
     }
 
     if (index > 0)
-        text->append("Лучший вариант: \"" + list[index - 1] + "\" \t\t" + QString::number(max));
+        text->append("Лучший вариант: \"" + list[index - 1] + "\" \t\t" + QString::number(vals[index]));
     mainLayout->addWidget(text);
 
 
@@ -201,16 +202,16 @@ void Dialog::defaultValue()
 QList<double> Dialog::calculate()
 {
     qDebug() << "clicked CALCULATE";
-    HierarchyAlgorithm ahp(this->alternatives);
+    AlghorithmAHP ahp(this->alternatives);
 
-    QList<matrixf> list;
+    std::vector<Matrix> list;
     for (QVector<QTableView*> vector : vecTables)
     {
         list.clear();
         for (QTableView* table : vector)
         {
             QAbstractItemModel* model = table->model();
-            matrixf mtx(model->rowCount(), model->columnCount());
+            Matrix mtx(model->rowCount(), model->columnCount());
 
             for (int row = 0; row < model->rowCount(); row++)
             {
@@ -227,10 +228,10 @@ QList<double> Dialog::calculate()
         ahp.addLevel(list);
     }
 
-    qDebug() << ahp.calculateWeights();
 
-    auto pair = ahp.getAnswer();
-    Dialog wgt(ahp.calculateWeights(), this->slist, pair.second, pair.first, this);
+    auto pair = ahp.answer();
+
+    Dialog wgt(QVector<double>::fromStdVector(pair.second), this->slist, pair.first, this);
     wgt.defaultValue();
 
     wgt.setModal(true);

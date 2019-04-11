@@ -26,10 +26,8 @@ private:
 
 
 public:
-    Dialog(QVector<double> vals, QStringList& list, double max, int index = 0,
-           QWidget* parent = nullptr);
-    Dialog(QVector<int> nums, int alternatives,
-           QWidget* parent = nullptr);
+    Dialog(QVector<double> vals, QStringList& list, int index = 0, QWidget* parent = nullptr);
+    Dialog(QVector<int> nums, int alternatives, QWidget* parent = nullptr);
     ~Dialog();
 
     void setTitles(int level, const QStringList& list);
