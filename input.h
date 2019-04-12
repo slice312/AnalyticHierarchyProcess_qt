@@ -19,16 +19,17 @@ class input : public QDialog
     Q_OBJECT
 
 public:
-    explicit input(QSpinBox* spin, QWidget *parent = nullptr);
+    explicit input(int prev, QSpinBox* spin, QWidget *parent = nullptr);
     ~input();
 
 private:
+    int count;
     Ui::input* ui;
-    QStringList strs;
+    QList<QStringList> strs;
     QList<QLineEdit*> lines;
 
 public:
-    QStringList give();
+    QList<QStringList> give();
 
 private slots:
     void readAll();

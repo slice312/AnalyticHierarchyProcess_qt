@@ -22,7 +22,7 @@ private:
     int levels;
     int alternatives;
     QVector<QVector<QTableView*>> vecTables;
-    QList<QStringList> slist;
+    static QList<QList<QStringList>> slist;
 
 
 public:
@@ -30,9 +30,14 @@ public:
     Dialog(QVector<int> nums, int alternatives, QWidget* parent = nullptr);
     ~Dialog();
 
-    void setTitles(int level, const QStringList& list);
+    void setTitles(int prev, int level, const QList<QStringList>& list);
     void defaultValue();
     QList<double> calculate();
+
+    static void fill(int level, const QList<QStringList>& list)
+    {
+        slist.push_back(list);
+    }
 
 };
 

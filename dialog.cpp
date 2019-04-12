@@ -12,6 +12,7 @@
 #include "spinboxdelegate.h"
 #include "alg_ahp.h"
 
+QList<QList<QStringList>> Dialog::slist;
 
 
 Dialog::Dialog(QVector<double> vals, QStringList& list, int index, QWidget* parent):
@@ -92,7 +93,11 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
             table->setMinimumWidth(250);
             table->setMinimumHeight(200);
             table->setItemDelegate(new SpinBoxDelegate(this));
-//            hlayout->addWidget(new QLabel(this->slist[i][j]));
+
+            //TODO индексы неверные
+            if (i > 0)
+                hlayout->addWidget(new QLabel(this->slist[i - i][0][j]));
+
             hlayout->addWidget(table);
             vector.push_back(table);
 
@@ -117,6 +122,21 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
         tables *= n;
 
     vector.clear();
+
+
+    auto llui = slist[slist.size() -2];
+
+
+    QStringList newList;
+
+    for (int n = 0; n < llui.size(); n++) {
+        for (int k = 0; k < llui[n].size(); ++k) {
+            newList.push_back(llui[n][k]);
+        }
+    }
+
+
+
     for (int i = 0; i < tables; i++)
     {
         QTableView* table = new QTableView();
@@ -127,6 +147,10 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
         //        table->setMinimumHeight(300);
         table->setMinimumWidth(300);
         table->setItemDelegate(new SpinBoxDelegate(this));
+
+        //TODO неверные индексы
+            hlayout->addWidget(new QLabel(newList[i]));
+
         hlayout->addWidget(table);
         vector.push_back(table);
     }
@@ -160,18 +184,22 @@ Dialog::~Dialog()
 
 
 // TODO дописать
-void Dialog::setTitles(int level, const QStringList& list)
+void Dialog::setTitles(int prev, int level, const QList<QStringList>& list)
 {
-    this->slist.push_back(list);
+    //    this->slist.push_back(list);
 
-    for (QTableView* table : vecTables[level])
-    {
-        QAbstractItemModel* model = table->model();
-        QStandardItemModel* mod = dynamic_cast<QStandardItemModel*>(model);
-        mod->setHorizontalHeaderLabels(list);
-        mod->setVerticalHeaderLabels(list);
-    }
-}
+
+//    for (int i = 0; i < delim; ++i)
+        for (int c = 0; c < vecTables[level].size(); ++c)
+        {
+            auto table = vecTables[level][c];
+            QAbstractItemModel* model = table->model();
+            QStandardItemModel* mod = dynamic_cast<QStandardItemModel*>(model);
+            mod->setHorizontalHeaderLabels(list[c % prev]);
+            mod->setVerticalHeaderLabels(list[c % prev]);
+        }
+
+   }
 
 
 
@@ -232,7 +260,7 @@ QList<double> Dialog::calculate()
 
     auto pair = ahp.answer();
 
-    Dialog wgt(QVector<double>::fromStdVector(pair.second), this->slist.back(), pair.first, this);
+    Dialog wgt(QVector<double>::fromStdVector(pair.second), this->slist.back().back(), pair.first, this);
     wgt.defaultValue();
 
     wgt.setModal(true);

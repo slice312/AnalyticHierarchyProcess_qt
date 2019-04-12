@@ -24,7 +24,8 @@ private:
     QList<QSpinBox*> spins;
     QList<QToolButton*> attachments;
     QList<QLineEdit*> lineEdits;
-    QList<QStringList> critNames;
+
+    QList<QList<QStringList>> critNames;
 
 
 public:

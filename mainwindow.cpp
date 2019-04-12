@@ -70,26 +70,41 @@ void MainWindow::on_okButton_clicked()
     for (QSpinBox* spin : spins)
         vec.push_back(spin->value());
 
-    QStringList list;
-    QVBoxLayout* layout = ui->altsNameVLayout;
 
+    QVBoxLayout* layout = ui->altsNameVLayout;
+    QList<QStringList> list2;
+    QStringList list;
     for (int i = 0; i < layout->count(); i++)
     {
         auto edit = dynamic_cast<QLineEdit*>(layout->itemAt(i)->widget());
         list.push_back(edit->text());
     }
+    list2.push_back(list);
+
+
+    critNames.push_back(list2);
+
+
+    if (!this->critNames.isEmpty())
+        for (int i = 0; i <= vec.size(); ++i)
+            Dialog::fill(i, this->critNames[i]);
+
+//    if (!list.isEmpty())
+//        Dialog::fill(vec.size(), critNames[vec.size()]);
+
 
 
     Dialog wgt(vec, ui->altsSpin->value());
     wgt.defaultValue();
 
+    QList<QStringList> tmp;
 
     if (!this->critNames.isEmpty())
-        for (int i = 0; i < vec.size(); ++i)
-            wgt.setTitles(i, this->critNames[i]);
+        for (int i = 0; i <= vec.size(); ++i)
+            wgt.setTitles(critNames[i].size(), i, critNames[i]);
 
-    if (!list.isEmpty())
-        wgt.setTitles(vec.size(), list);
+    //    if (!critNames[critNames.size()- 1].isEmpty())
+    //        wgt.setTitles(vec.size(), critNames[critNames.size()- 1]);
 
     wgt.setModal(true);
     wgt.setMinimumSize(800, 600);
@@ -130,7 +145,7 @@ void MainWindow::toolButton()
         }
     }
 
-    input wgt(spins[index], this);
+    input wgt((index > 0 ) ? spins[index - 1]->value() : 1, spins[index], this);
     wgt.setModal(true);
     wgt.exec();
 

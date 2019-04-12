@@ -5,12 +5,16 @@
 #include  <QDialogButtonBox>
 
 
-input::input(QSpinBox* spin, QWidget *parent) :
+input::input(int prev, QSpinBox* spin, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::input)
 {
     ui->setupUi(this);
-    for (int i = 0; i < spin->value(); ++i) {
+    this->count = prev;
+
+
+
+    for (int i = 0; i < spin->value() * prev; ++i) {
         QLineEdit* line = new QLineEdit(this);
         this->lines.push_back(line);
         ui->vLayout->addWidget(line);
@@ -28,7 +32,7 @@ input::~input()
 }
 
 
-QStringList input::give()
+QList<QStringList> input::give()
 {
     return strs;
 }
@@ -36,9 +40,13 @@ QStringList input::give()
 
 void input::readAll()
 {
-    for (QLineEdit* line : lines)
+    for (int i = 0; i < count; ++i)
     {
-        strs.push_back(line->text());
+        QStringList ls;
+        for (int c = 0, n = i; c < lines.size() / count; ++n, ++c)
+        {
+            ls.push_back((lines[i + n]->text()));
+        }
+        strs.push_back(ls);
     }
-
 }
