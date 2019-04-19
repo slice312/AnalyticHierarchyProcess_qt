@@ -4,14 +4,15 @@
 #include <QMainWindow>
 #include <QSpinBox>
 #include <QLineEdit>
-#include <QLabel>
-#include <QVector>
-#include <QPair>
+#include <QStringList>
+
+
 
 
 namespace Ui {
 class MainWindow;
 }
+
 
 
 class MainWindow : public QMainWindow
@@ -21,11 +22,13 @@ class MainWindow : public QMainWindow
 
 private:
     Ui::MainWindow* ui;
-    QList<QSpinBox*> spins;
-    QList<QToolButton*> attachments;
-    QList<QLineEdit*> lineEdits;
 
-    QList<QList<QStringList>> critNames;
+    QList<QSpinBox*> spins;              //кол-во критериев
+    QList<QToolButton*> attachments;
+
+    QList<QLineEdit*> lineEdits;         //для альтернатив
+
+    QList<QList<QStringList>> critNames; //имена критериев и альтернатив
 
 
 public:
@@ -33,22 +36,12 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_addButton_clicked();
     void on_resetButton_clicked();
-    void on_okButton_clicked();
+    void on_addButton_clicked();
+    void on_toolbut_clicked();
     void on_altsSpin_valueChanged(int value);
-
-
-    void toolButton();
-
+    void on_okButton_clicked();
 };
-
-
-
-
-
-
-
 
 
 #endif // MAIN_WINDOW_H_INCLUDED

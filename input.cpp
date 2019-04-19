@@ -1,11 +1,14 @@
+#include <cassert>
+
+#include <QPushButton>
+#include <QDialogButtonBox>
+
 #include "input.h"
 #include "ui_input.h"
-#include "mainwindow.h"
-#include <QPushButton>
-#include  <QDialogButtonBox>
 
 
-input::input(int prev, QSpinBox* spin, QWidget *parent) :
+
+input::input(int prev, int current, QWidget* parent) :
     QDialog(parent),
     ui(new Ui::input)
 {
@@ -13,8 +16,8 @@ input::input(int prev, QSpinBox* spin, QWidget *parent) :
     this->count = prev;
 
 
-
-    for (int i = 0; i < spin->value() * prev; ++i) {
+    for (int i = 0; i < current * prev; i++)
+    {
         QLineEdit* line = new QLineEdit(this);
         this->lines.push_back(line);
         ui->vLayout->addWidget(line);
@@ -23,8 +26,10 @@ input::input(int prev, QSpinBox* spin, QWidget *parent) :
     QPushButton* buttonOk = ui->buttonBox->button(QDialogButtonBox::Ok);
     QPushButton* cancel = ui->buttonBox->button(QDialogButtonBox::Cancel);
     connect(buttonOk, SIGNAL(clicked()), this, SLOT(readAll()));
-    connect(cancel, SIGNAL(clicked()), this, SLOT(cance()));
+    connect(cancel, SIGNAL(clicked()), this, SLOT(cancel()));
 }
+
+
 
 input::~input()
 {
@@ -32,21 +37,22 @@ input::~input()
 }
 
 
-QList<QStringList> input::give()
-{
-    return strs;
-}
 
-
-void input::readAll()
+QList<QStringList> input::getNames()
 {
-    for (int i = 0; i < count; ++i)
+    QList<QStringList> strs;
+    auto iterator = lines.begin();
+
+    for (int i = 0; i < count; i++)
     {
-        QStringList ls;
-        for (int c = 0, n = i; c < lines.size() / count; ++n, ++c)
+        QStringList list;
+        for (int j = 0; j < lines.size() / count; j++)
         {
-            ls.push_back((lines[i + n]->text()));
+            assert(iterator != lines.end() && "iterator out of range, input::getNames()");
+            list.push_back((*iterator)->text());
+            ++iterator;
         }
-        strs.push_back(ls);
+        strs.push_back(list);
     }
+    return strs;
 }

@@ -5,6 +5,7 @@
 #include <QVector>
 #include <QList>
 #include <QTableView>
+#include <vector>
 
 
 namespace Ui {
@@ -22,22 +23,19 @@ private:
     int levels;
     int alternatives;
     QVector<QVector<QTableView*>> vecTables;
-    static QList<QList<QStringList>> slist;
+    QList<QList<QStringList>> slist;     //имена критерив и альтернатив
 
 
 public:
-    Dialog(QVector<double> vals, QStringList& list, int index = 0, QWidget* parent = nullptr);
-    Dialog(QVector<int> nums, int alternatives, QWidget* parent = nullptr);
+    Dialog(QVector<double> vals, QStringList& list, int index,
+            std::vector<std::vector<double>> CR, QWidget* parent = nullptr);
+    Dialog(const QList<QList<QStringList>>& names, QVector<int> nums,
+           int alternatives, QWidget* parent = nullptr);
     ~Dialog();
 
     void setTitles(int prev, int level, const QList<QStringList>& list);
     void defaultValue();
     QList<double> calculate();
-
-    static void fill(int level, const QList<QStringList>& list)
-    {
-        slist.push_back(list);
-    }
 
 };
 

@@ -25,7 +25,7 @@ std::ostream& operator<<(std::ostream& os, const Matrix& m)
 }
 
 
-int main()
+int maint()
 {
     //    Matrix m = {
     //        {1, 2},

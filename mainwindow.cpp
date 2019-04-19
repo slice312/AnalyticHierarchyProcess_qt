@@ -1,12 +1,12 @@
 #include <QProcess>
 #include <QDebug>
-#include <QLineEdit>
-#include <QSpinBox>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "dialog.h"
 #include "input.h"
+
+
 
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
@@ -17,10 +17,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
     ui->scrollArea->setMinimumHeight(150);
     ui->label1->setMinimumWidth(150);
 
-    spins.push_back(ui->spin1);
-    attachments.push_back(ui->toolbut1);
-
-    connect(ui->toolbut1, SIGNAL(clicked()), this, SLOT(toolButton()));
+    this->spins.push_back(ui->spin);
+    this->attachments.push_back(ui->toolbut);
 }
 
 
@@ -28,6 +26,15 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+
+
+//FIXME перезагружает приложение
+void MainWindow::on_resetButton_clicked()
+{
+    qApp->quit();
+    QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
 }
 
 
@@ -47,68 +54,37 @@ void MainWindow::on_addButton_clicked()
     ui->criteriaLayout->addWidget(toolbut, row, 2, 1, 1);
 
     toolbut->setText("...");
-    connect(toolbut, SIGNAL(clicked()), this, SLOT(toolButton()));
+    connect(toolbut, SIGNAL(clicked()), this, SLOT(on_toolbut_clicked()));
 
-    spins.push_back(newSpin);
-    attachments.push_back(toolbut);
+    this->spins.push_back(newSpin);
+    this->attachments.push_back(toolbut);
 }
 
 
 
-// TODO переписать этот метод, чтобы без перезагрузки
-void MainWindow::on_resetButton_clicked()
+void MainWindow::on_toolbut_clicked()
 {
-    qApp->quit();
-    QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
-}
-
-
-
-void MainWindow::on_okButton_clicked()
-{
-    QVector<int> vec;
-    for (QSpinBox* spin : spins)
-        vec.push_back(spin->value());
-
-
-    QVBoxLayout* layout = ui->altsNameVLayout;
-    QList<QStringList> list2;
-    QStringList list;
-    for (int i = 0; i < layout->count(); i++)
+    int index = -1;
+    for (int i = 0; i < attachments.size(); i++)
     {
-        auto edit = dynamic_cast<QLineEdit*>(layout->itemAt(i)->widget());
-        list.push_back(edit->text());
+        if (sender() == attachments[i])
+        {
+            index = i;
+            break;
+        }
     }
-    list2.push_back(list);
+
+    input form((index > 0 ) ? spins[index - 1]->value() : 1, spins[index]->value(), this);
+    form.setModal(true);
+    form.exec();
 
 
-    critNames.push_back(list2);
+    if (critNames.size() > index)
+        critNames[index] = form.getNames();
+    else
+        critNames.push_back(form.getNames());
 
-
-    if (!this->critNames.isEmpty())
-        for (int i = 0; i <= vec.size(); ++i)
-            Dialog::fill(i, this->critNames[i]);
-
-//    if (!list.isEmpty())
-//        Dialog::fill(vec.size(), critNames[vec.size()]);
-
-
-
-    Dialog wgt(vec, ui->altsSpin->value());
-    wgt.defaultValue();
-
-    QList<QStringList> tmp;
-
-    if (!this->critNames.isEmpty())
-        for (int i = 0; i <= vec.size(); ++i)
-            wgt.setTitles(critNames[i].size(), i, critNames[i]);
-
-    //    if (!critNames[critNames.size()- 1].isEmpty())
-    //        wgt.setTitles(vec.size(), critNames[critNames.size()- 1]);
-
-    wgt.setModal(true);
-    wgt.setMinimumSize(800, 600);
-    wgt.exec();
+    qDebug() << critNames[index];
 }
 
 
@@ -135,26 +111,38 @@ void MainWindow::on_altsSpin_valueChanged(int value)
 
 
 
-void MainWindow::toolButton()
+void MainWindow::on_okButton_clicked()
 {
-    int index = -1;
-    for (int i = 0; i < attachments.size(); ++i) {
-        if (sender() == attachments[i]) {
-            index = i;
-            break;
-        }
+    //добавить название альтернатив
+    QVBoxLayout* layout = ui->altsNameVLayout;
+    QList<QStringList> altsLevel;
+    QStringList list;
+        for (int i = 0; i < layout->count(); i++)
+    {
+        auto edit = qobject_cast<QLineEdit*>(layout->itemAt(i)->widget());
+        list.push_back(edit->text());
     }
+    altsLevel.push_back(list);
+    critNames.push_back(altsLevel);
 
-    input wgt((index > 0 ) ? spins[index - 1]->value() : 1, spins[index], this);
+
+    QVector<int> vec;
+    for (QSpinBox* spin : spins)
+        vec.push_back(spin->value());
+
+
+
+    Dialog wgt(critNames, vec, ui->altsSpin->value());
+    wgt.defaultValue();
+
+    QList<QStringList> tmp;
+
+    if (!this->critNames.isEmpty())
+        for (int i = 0; i < vec.size() + 1; ++i)
+            wgt.setTitles(critNames[i].size(), i, critNames[i]);
+
+
     wgt.setModal(true);
+    wgt.setMinimumSize(800, 600);
     wgt.exec();
-
-
-    if (this->critNames.size() > index)
-        this->critNames[index] = wgt.give();
-    else
-        this->critNames.push_back(wgt.give());
-
-    qDebug() << critNames[index];
-
 }

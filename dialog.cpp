@@ -12,10 +12,10 @@
 #include "spinboxdelegate.h"
 #include "alg_ahp.h"
 
-QList<QList<QStringList>> Dialog::slist;
 
 
-Dialog::Dialog(QVector<double> vals, QStringList& list, int index, QWidget* parent):
+Dialog::Dialog(QVector<double> vals, QStringList& list, int index,
+               std::vector<std::vector<double>> CR, QWidget* parent):
     QDialog(parent),
     ui(new Ui::Dialog)
 {
@@ -40,15 +40,23 @@ Dialog::Dialog(QVector<double> vals, QStringList& list, int index, QWidget* pare
         text->append("Лучший вариант: \"" + list[index] + "\" \t\t" + QString::number(vals[index]));
     mainLayout->addWidget(text);
 
-
+    text->append("Коэффициенты согласованности (CR) для каждой матрицы");
+    int count = 0;
+    for (int i = 0; i < CR.size(); ++i) {
+        for (int j = 0; j < CR[i].size(); ++j) {
+            text->append(QVariant(count++).toString() + ") " + QVariant(CR[i][j]).toString());
+        }
+    }
 }
 
 
 
-Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
-    QDialog(parent, Qt::Window), ui(new Ui::Dialog)
+Dialog::Dialog(const QList<QList<QStringList>>& names, QVector<int> nums, int alternatives, QWidget* parent) :
+    QDialog(parent, Qt::Window),
+    ui(new Ui::Dialog)
 {
     ui->setupUi(this);
+    this->slist = names;
     this->levels = nums.size();
     this->alternatives = alternatives;
     qDebug() << nums;
@@ -77,9 +85,7 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
         hlayout->setObjectName("hlayout_" + QString::number(i));
 
 
-        int tables = 1;
-        for (int n = i - 1; n >= 0; n--)
-            tables *= nums[n];
+        int tables = (i > 0) ? nums[i - 1] : 1;
 
         vector.clear();
 
@@ -124,7 +130,7 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
     vector.clear();
 
 
-    auto llui = slist[slist.size() -2];
+    auto llui = slist[slist.size() - 2];
 
 
     QStringList newList;
@@ -149,7 +155,7 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
         table->setItemDelegate(new SpinBoxDelegate(this));
 
         //TODO неверные индексы
-            hlayout->addWidget(new QLabel(newList[i]));
+            hlayout->addWidget(new QLabel(newList[i % newList.size()]));
 
         hlayout->addWidget(table);
         vector.push_back(table);
@@ -174,13 +180,13 @@ Dialog::Dialog(QVector<int> nums, int alternatives, QWidget* parent) :
 
 
 
-
 Dialog::~Dialog()
 {
     dumpObjectTree();
     qDebug() << "Dialog destroyed";
     delete ui;
 }
+
 
 
 // TODO дописать
@@ -233,6 +239,8 @@ QList<double> Dialog::calculate()
     qDebug() << "clicked CALCULATE";
     AlghorithmAHP ahp(this->alternatives);
 
+    std::vector<std::vector<double>> CR;
+
     std::vector<Matrix> list;
     for (QVector<QTableView*> vector : vecTables)
     {
@@ -254,13 +262,13 @@ QList<double> Dialog::calculate()
             }
             list.push_back(mtx);
         }
-        ahp.addLevel(list);
+        CR.push_back(ahp.addLevel(list));
     }
 
 
     auto pair = ahp.answer();
 
-    Dialog wgt(QVector<double>::fromStdVector(pair.second), this->slist.back().back(), pair.first, this);
+    Dialog wgt(QVector<double>::fromStdVector(pair.second), this->slist.back().back(), pair.first, CR, this);
     wgt.defaultValue();
 
     wgt.setModal(true);

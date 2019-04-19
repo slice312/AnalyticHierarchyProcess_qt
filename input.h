@@ -1,12 +1,9 @@
-#ifndef INPUT_H
-#define INPUT_H
+#ifndef INPUT_H_INCLUDED
+#define INPUT_H_INCLUDED
 
 #include <QDialog>
-#include <QSpinBox>
-#include <QList>
 #include <QStringList>
 #include <QLineEdit>
-#include <QWidget>
 
 
 
@@ -19,26 +16,17 @@ class input : public QDialog
     Q_OBJECT
 
 public:
-    explicit input(int prev, QSpinBox* spin, QWidget *parent = nullptr);
+    explicit input(int prev, int current, QWidget* parent = nullptr);
     ~input();
 
 private:
     int count;
     Ui::input* ui;
-    QList<QStringList> strs;
     QList<QLineEdit*> lines;
 
+
 public:
-    QList<QStringList> give();
-
-private slots:
-    void readAll();
-
-    void cance()
-    {
-        readAll();
-    }
-
+    QList<QStringList> getNames();
 };
 
-#endif // INPUT_H
+#endif // INPUT_H_INCLUDED
