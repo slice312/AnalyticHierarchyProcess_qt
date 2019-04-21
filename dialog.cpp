@@ -6,6 +6,7 @@
 #include <QScrollBar>
 #include <QLabel>
 #include <QTextEdit>
+#include <QMessageBox>
 
 #include "dialog.h"
 #include "ui_dialog.h"
@@ -23,6 +24,7 @@ Dialog::Dialog(QVector<double> vals, QStringList& list, int index,
     qDebug() << vals.size();
     qDebug() << list.size();
     ui->setupUi(this);
+    this->setMinimumSize(500, 500);
     QVBoxLayout* mainLayout = new QVBoxLayout(ui->scrollAreaWidgetContents);
     mainLayout->setMargin(20);
     mainLayout->addWidget(new QLabel("Ответ"));
@@ -37,13 +39,13 @@ Dialog::Dialog(QVector<double> vals, QStringList& list, int index,
     }
 
     if (index >= 0)
-        text->append("Лучший вариант: \"" + list[index] + "\" \t\t" + QString::number(vals[index]));
+        text->append("Лучший вариант: \"" + list[index] + "\" \t" + QString::number(vals[index]));
     mainLayout->addWidget(text);
 
-    text->append("Коэффициенты согласованности (CR) для каждой матрицы");
-    int count = 0;
-    for (int i = 0; i < CR.size(); ++i) {
-        for (int j = 0; j < CR[i].size(); ++j) {
+    text->append("\n\n\nКоэффициенты согласованности (CR) для каждой матрицы");
+    int count = 1;
+    for (uint i = 0; i < CR.size(); ++i) {
+        for (uint j = 0; j < CR[i].size(); ++j) {
             text->append(QVariant(count++).toString() + ") " + QVariant(CR[i][j]).toString());
         }
     }
@@ -56,6 +58,7 @@ Dialog::Dialog(const QList<QList<QStringList>>& names, QVector<int> nums, int al
     ui(new Ui::Dialog)
 {
     ui->setupUi(this);
+    this->setMinimumSize(1000, 600);
     this->slist = names;
     this->levels = nums.size();
     this->alternatives = alternatives;
@@ -154,8 +157,8 @@ Dialog::Dialog(const QList<QList<QStringList>>& names, QVector<int> nums, int al
         table->setMinimumWidth(300);
         table->setItemDelegate(new SpinBoxDelegate(this));
 
-        //TODO неверные индексы
-            hlayout->addWidget(new QLabel(newList[i % newList.size()]));
+        //BUG неверные индексы
+            hlayout->addWidget(new QLabel(newList[i]));
 
         hlayout->addWidget(table);
         vector.push_back(table);
@@ -195,17 +198,17 @@ void Dialog::setTitles(int prev, int level, const QList<QStringList>& list)
     //    this->slist.push_back(list);
 
 
-//    for (int i = 0; i < delim; ++i)
-        for (int c = 0; c < vecTables[level].size(); ++c)
-        {
-            auto table = vecTables[level][c];
-            QAbstractItemModel* model = table->model();
-            QStandardItemModel* mod = dynamic_cast<QStandardItemModel*>(model);
-            mod->setHorizontalHeaderLabels(list[c % prev]);
-            mod->setVerticalHeaderLabels(list[c % prev]);
-        }
+    //    for (int i = 0; i < delim; ++i)
+    for (int c = 0; c < vecTables[level].size(); ++c)
+    {
+        auto table = vecTables[level][c];
+        QAbstractItemModel* model = table->model();
+        QStandardItemModel* mod = dynamic_cast<QStandardItemModel*>(model);
+        mod->setHorizontalHeaderLabels(list[c % prev]);
+        mod->setVerticalHeaderLabels(list[c % prev]);
+    }
 
-   }
+}
 
 
 
@@ -234,7 +237,7 @@ void Dialog::defaultValue()
 
 
 
-QList<double> Dialog::calculate()
+void Dialog::calculate()
 {
     qDebug() << "clicked CALCULATE";
     AlghorithmAHP ahp(this->alternatives);
@@ -249,6 +252,7 @@ QList<double> Dialog::calculate()
         {
             QAbstractItemModel* model = table->model();
             Matrix mtx(model->rowCount(), model->columnCount());
+
 
             for (int row = 0; row < model->rowCount(); row++)
             {
@@ -266,6 +270,21 @@ QList<double> Dialog::calculate()
     }
 
 
+    for (uint i = 0; i < CR.size(); ++i) {
+        for (uint j = 0; j < CR[i].size(); ++j) {
+            auto check = CR[i][j];
+            if (CR[i][j] > 0.1)
+            {
+                QMessageBox::critical(this, "Несогл", tr("матрица не согласованна\n") +
+                                      "уровень: " + QVariant(i + 1).toString() + ", номер: " +
+                                      QVariant(j + 1).toString() + "  " + QVariant(check).toString());
+                return;
+            }
+        }
+    }
+
+
+
     auto pair = ahp.answer();
 
     Dialog wgt(QVector<double>::fromStdVector(pair.second), this->slist.back().back(), pair.first, CR, this);
@@ -274,9 +293,6 @@ QList<double> Dialog::calculate()
     wgt.setModal(true);
     wgt.setMinimumSize(300, 200);
     wgt.exec();
-
-
-    return QList<double>();
 }
 
 

@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <numeric>
 #include "alg_ahp.h"
+#include <QDebug>
 
 using namespace ahp;
 
@@ -43,7 +44,9 @@ vector<double> AlghorithmAHP::addLevel(const vector<Matrix>& mtxs)
 
         double CI = (nMax - nVal.size()) / (nVal.size() - 1);
         double RI = (1.98 * (nVal.size() - 2)) / nVal.size();
-        this->CR[levels].emplace_back(CI / RI);
+        double CR = CI / RI;
+        CR = (RI == 0) ? std::numeric_limits<double>::min() : CR;
+        this->CR[levels].push_back(CR);
     }
 
     list.emplace_back(matricesOnLevel);
@@ -99,6 +102,25 @@ pair<int, vector<double>> AlghorithmAHP::answer()
         }
     }
     return std::make_pair(index, result);
+}
+
+
+
+double AlghorithmAHP::getCR(const Matrix& m)
+{
+    std::vector<double> avr1 = m.normalize().avrRows();
+    std::vector<double> nvl = m * avr1;
+
+    double nMax = std::accumulate(nvl.begin(), nvl.end(), 0.0);
+
+
+    double CI = (nMax - nvl.size()) / (nvl.size() - 1);
+    // numeri_limits::min добавил чтобы не было деления на 0
+    double RI = (1.98 * (nvl.size() - 2)) / nvl.size();
+    double CR = CI / RI;
+    CR = (RI == 0) ? std::numeric_limits<double>::min() : CR;
+
+    return CR;
 }
 
 

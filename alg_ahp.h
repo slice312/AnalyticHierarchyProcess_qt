@@ -47,6 +47,7 @@ public:
     double addMatrix(uint onLevel, const Matrix& mx);
 
     pair<int, vector<double>> answer();
+    double static getCR(const Matrix& m);
 
 
 private:

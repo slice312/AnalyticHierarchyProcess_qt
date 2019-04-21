@@ -35,7 +35,7 @@ public:
 
     void setTitles(int prev, int level, const QList<QStringList>& list);
     void defaultValue();
-    QList<double> calculate();
+    void calculate();
 
 };
 
