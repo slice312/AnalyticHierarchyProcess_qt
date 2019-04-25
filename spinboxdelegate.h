@@ -4,6 +4,7 @@
 #include <QItemDelegate>
 #include <QModelIndex>
 #include <QVector>
+#include "alg_ahp.h"
 
 
 class SpinBoxDelegate : public QItemDelegate
@@ -12,9 +13,10 @@ class SpinBoxDelegate : public QItemDelegate
 
 private:
     QVector<QModelIndex> lockIndexes;
+    mutable Matrix marked;
 
 public:
-    explicit SpinBoxDelegate(QObject* parent = nullptr);
+    SpinBoxDelegate(int rows, int cols, QObject* parent = nullptr);
 
     void lockIndex(const QModelIndex& index);
 
@@ -30,6 +32,9 @@ protected:
 
     void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option,
                               const QModelIndex& index) const override;
+
+signals:
+    void indicate(bool state) const;
 };
 
 

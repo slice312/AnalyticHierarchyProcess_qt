@@ -101,11 +101,27 @@ Dialog::Dialog(const QList<QList<QStringList>>& names, QVector<int> nums, int al
             table->setModel(model);
             table->setMinimumWidth(250);
             table->setMinimumHeight(200);
-            table->setItemDelegate(new SpinBoxDelegate(this));
+            SpinBoxDelegate* delegate =
+                    new SpinBoxDelegate(model->rowCount(), model->columnCount(), this);
+            table->setItemDelegate(delegate);
 
             //TODO индексы неверные
             if (i > 0)
+            {
                 hlayout->addWidget(new QLabel(this->slist[i - i][0][j]));
+                QLabel* lbl = getLabel(":/pics/indicator_gray.svg", {10, 10, 30, 30}, this);
+                hlayout->addWidget(lbl);
+                connect(delegate, &SpinBoxDelegate::indicate, [lbl] (bool state)
+                {
+                    QPixmap pix;
+                    if (state == true)
+                        pix = QIcon(":/pics/indicator_green.svg").pixmap(lbl->size());
+                    else
+                        pix = QIcon(":/pics/indicator_red.svg").pixmap(lbl->size());
+                    lbl->setPixmap(pix);
+                });
+//                hlayout->addWidget(new QLabel("check", this));
+            }
 
             hlayout->addWidget(table);
             vector.push_back(table);
@@ -155,7 +171,9 @@ Dialog::Dialog(const QList<QList<QStringList>>& names, QVector<int> nums, int al
         table->setModel(model);
         //        table->setMinimumHeight(300);
         table->setMinimumWidth(300);
-        table->setItemDelegate(new SpinBoxDelegate(this));
+        SpinBoxDelegate* delegate =
+                new SpinBoxDelegate(model->rowCount(), model->columnCount(), this);
+        table->setItemDelegate(delegate);
 
         //BUG неверные индексы
             hlayout->addWidget(new QLabel(newList[i]));
@@ -297,4 +315,21 @@ void Dialog::calculate()
 
 
 
+QLabel* Dialog::getLabel(const QString& file, const QRect& rect, QWidget* parent)
+{
+    QLabel* label = new QLabel(parent);
+    label->setGeometry(rect);
+    label->setAlignment(Qt::AlignCenter);
+    label->setLineWidth(1);
 
+    QPixmap pix = QIcon(file).pixmap(label->size());
+    label->setPixmap(pix);
+    return label;
+}
+
+
+
+void Dialog::setIndicator(bool state)
+{
+
+}

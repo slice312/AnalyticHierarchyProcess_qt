@@ -1,21 +1,24 @@
 #include <QDoubleSpinBox>
 #include <QDebug>
-
 #include "spinboxdelegate.h"
 
 
 
-SpinBoxDelegate::SpinBoxDelegate(QObject* parent) :
-    QItemDelegate(parent)
+
+SpinBoxDelegate::SpinBoxDelegate(int rows, int cols, QObject* parent) :
+    QItemDelegate(parent), marked(rows, cols)
 {
     qDebug() << "DELEGATE CREATED";
 }
 
 
-
 void SpinBoxDelegate::lockIndex(const QModelIndex& index)
 {
     lockIndexes.push_back(index);
+    int row = index.row();
+    int col = index.column();
+    marked(row, col) = 1.0;
+    marked(col, row) = 1.0;
 }
 
 
@@ -45,23 +48,48 @@ QWidget* SpinBoxDelegate::createEditor(QWidget* parent, const QStyleOptionViewIt
 
 void SpinBoxDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
+    qDebug() << __func__;
     QDoubleSpinBox* doubleSpinBox = qobject_cast<QDoubleSpinBox*>(editor);
     doubleSpinBox->setValue(1.00);
-    qDebug() << __func__;
 }
+
 
 
 
 void SpinBoxDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
                                    const QModelIndex& index) const
 {
+    qDebug() << __func__;
     QDoubleSpinBox* doubleSpinBox = qobject_cast<QDoubleSpinBox*>(editor);
     double value = doubleSpinBox->value();
+    int col = index.column();
+    int row = index.row();
 
-    QModelIndex chainedIndex = model->index(index.column(), index.row());
+    QModelIndex chainedIndex = model->index(col, row);
     model->setData(index, value);
     model->setData(chainedIndex, QString::number(1.0 / value, 'f', 3));
-    qDebug() << __func__;
+
+    marked(col, row) = 1.0;
+    marked(row, col) = 1.0;
+
+    bool flag = true;
+    for (int i = 0; i < marked.size1(); i++)
+    {
+        for (int j = 0; j < marked.size2(); j++)
+        {
+            if (marked(i, j) == 0.0)
+            {
+                flag = false;
+                break;
+            }
+        }
+    }
+
+    if (flag == true)
+    {
+        emit indicate(true);
+        qDebug() << "SpinBoxDelegate EMIT indicate";
+    }
 }
 
 

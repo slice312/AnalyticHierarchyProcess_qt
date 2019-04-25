@@ -37,4 +37,7 @@ FORMS += \
         dialog.ui \
     input.ui
 
+RESOURCES += \
+        res.qrc
+
 

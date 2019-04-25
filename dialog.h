@@ -5,6 +5,7 @@
 #include <QVector>
 #include <QList>
 #include <QTableView>
+#include <QLabel>
 #include <vector>
 
 
@@ -23,7 +24,7 @@ private:
     int levels;
     int alternatives;
     QVector<QVector<QTableView*>> vecTables;
-    QList<QList<QStringList>> slist;     //имена критерив и альтернатив
+    QList<QList<QStringList>> slist;     //имена критериев и альтернатив
 
 
 public:
@@ -37,6 +38,11 @@ public:
     void defaultValue();
     void calculate();
 
+private:
+    QLabel* getLabel(const QString& file, const QRect& rect, QWidget* parent);
+
+private slots:
+    void setIndicator(bool state);
 };
 
 #endif // DIALOG_H_INCLUDED
