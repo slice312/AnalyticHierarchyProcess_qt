@@ -2,8 +2,6 @@
 #define SPINBOX_DELEGATE_H_INCLUDED
 
 #include <QItemDelegate>
-#include <QModelIndex>
-#include <QVector>
 #include "alg_ahp.h"
 
 
@@ -12,11 +10,12 @@ class SpinBoxDelegate : public QItemDelegate
     Q_OBJECT
 
 private:
-    QVector<QModelIndex> lockIndexes;
-    mutable Matrix marked;
+    QList<QModelIndex> lockIndexes;   //заблокировання диагональ
+    mutable Matrix marked;              //для проверки заполненности
+    mutable Matrix mx;                  //для расчета согласованности
 
 public:
-    SpinBoxDelegate(int rows, int cols, QObject* parent = nullptr);
+    SpinBoxDelegate(int rowcol, int cols, QObject* parent = nullptr);
 
     void lockIndex(const QModelIndex& index);
 
@@ -36,7 +35,6 @@ protected:
 signals:
     void indicate(bool state) const;
 };
-
 
 
 

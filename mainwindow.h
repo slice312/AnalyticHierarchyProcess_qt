@@ -23,10 +23,10 @@ class MainWindow : public QMainWindow
 private:
     Ui::MainWindow* ui;
 
-    QList<QSpinBox*> spins;              //кол-во критериев
+    QList<QSpinBox*> spins;        //спины с кол-вом критериев на уровне
     QList<QToolButton*> attachments;
 
-    QList<QLineEdit*> lineEdits;         //для альтернатив
+    QList<QLineEdit*> lineEdits;   //для альтернатив
 
     QList<QList<QStringList>> critNames; //имена критериев и альтернатив
 

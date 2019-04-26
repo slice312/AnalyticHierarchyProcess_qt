@@ -8,25 +8,24 @@
 
 
 namespace Ui {
-class input;
+class Input;
 }
 
-class input : public QDialog
+
+class Input : public QDialog
 {
     Q_OBJECT
 
-public:
-    explicit input(int prev, int current, QWidget* parent = nullptr);
-    ~input();
-
 private:
-    int count;
-    Ui::input* ui;
-    QList<QLineEdit*> lines;
-
+    Ui::Input* ui;
+    QList<QLineEdit*> qlines;
+    int groups;
 
 public:
-    QList<QStringList> getNames();
+    Input(int lines, int groups, QWidget* parent = nullptr);
+    ~Input();
+
+    QList<QStringList> getNames() const;
 };
 
 #endif // INPUT_H_INCLUDED

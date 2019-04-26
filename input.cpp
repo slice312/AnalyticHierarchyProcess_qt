@@ -1,54 +1,43 @@
 #include <cassert>
-
-#include <QPushButton>
-#include <QDialogButtonBox>
-
 #include "input.h"
 #include "ui_input.h"
 
 
 
-input::input(int prev, int current, QWidget* parent) :
-    QDialog(parent),
-    ui(new Ui::input)
+Input::Input(int count, int groups, QWidget* parent) :
+    QDialog(parent), ui(new Ui::Input)
 {
     ui->setupUi(this);
-    this->count = prev;
+    this->groups = groups;
 
-
-    for (int i = 0; i < current * prev; i++)
+    for (int i = 0; i < count; i++)
     {
         QLineEdit* line = new QLineEdit(this);
-        this->lines.push_back(line);
+        this->qlines.push_back(line);
         ui->vLayout->addWidget(line);
     }
-
-    QPushButton* buttonOk = ui->buttonBox->button(QDialogButtonBox::Ok);
-    QPushButton* cancel = ui->buttonBox->button(QDialogButtonBox::Cancel);
-    connect(buttonOk, SIGNAL(clicked()), this, SLOT(readAll()));
-    connect(cancel, SIGNAL(clicked()), this, SLOT(cancel()));
 }
 
 
 
-input::~input()
+Input::~Input()
 {
     delete ui;
 }
 
 
 
-QList<QStringList> input::getNames()
+QList<QStringList> Input::getNames() const
 {
     QList<QStringList> strs;
-    auto iterator = lines.begin();
+    auto iterator = qlines.begin();
 
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < groups; i++)
     {
         QStringList list;
-        for (int j = 0; j < lines.size() / count; j++)
+        for (int j = 0; j < qlines.size() / groups; j++)
         {
-            assert(iterator != lines.end() && "iterator out of range, input::getNames()");
+            assert(iterator != qlines.end() && "iterator out of range, input::getNames()");
             list.push_back((*iterator)->text());
             ++iterator;
         }

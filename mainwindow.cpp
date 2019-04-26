@@ -30,7 +30,6 @@ MainWindow::~MainWindow()
 
 
 
-//FIXME перезагружает приложение
 void MainWindow::on_resetButton_clicked()
 {
     qApp->quit();
@@ -54,7 +53,7 @@ void MainWindow::on_addButton_clicked()
     ui->criteriaLayout->addWidget(toolbut, row, 2, 1, 1);
 
     toolbut->setText("...");
-    connect(toolbut, SIGNAL(clicked()), this, SLOT(on_toolbut_clicked()));
+    connect(toolbut, &QToolButton::clicked, this, &MainWindow::on_toolbut_clicked);
 
     this->spins.push_back(newSpin);
     this->attachments.push_back(toolbut);
@@ -74,16 +73,19 @@ void MainWindow::on_toolbut_clicked()
         }
     }
 
-    input form((index > 0 ) ? spins[index - 1]->value() : 1, spins[index]->value(), this);
+    int groups = (index > 0)
+            ? spins[index - 1]->value()
+            : 1;
+    int lines = spins[index]->value() * groups;
+
+    Input form(lines, groups, this);
     form.setModal(true);
     form.exec();
-
 
     if (critNames.size() > index)
         critNames[index] = form.getNames();
     else
         critNames.push_back(form.getNames());
-
     qDebug() << critNames[index];
 }
 
@@ -113,36 +115,33 @@ void MainWindow::on_altsSpin_valueChanged(int value)
 
 void MainWindow::on_okButton_clicked()
 {
-    //добавить название альтернатив
+    int altsMatrices = 1; //кол-во матриц для альтернатив
+    QVector<int> vec;
+    for (QSpinBox* spin : this->spins)
+    {
+        int val = spin->value();
+        vec.push_back(val);
+        altsMatrices *= val;
+    }
+
+
+    //добавить названия альтернатив
     QVBoxLayout* layout = ui->altsNameVLayout;
-    QList<QStringList> altsLevel;
     QStringList list;
-        for (int i = 0; i < layout->count(); i++)
+    for (int i = 0; i < layout->count(); i++)
     {
         auto edit = qobject_cast<QLineEdit*>(layout->itemAt(i)->widget());
         list.push_back(edit->text());
     }
-    altsLevel.push_back(list);
-    critNames.push_back(altsLevel);
 
+    QList<QStringList> altsLevel;
+    for (int i = 0; i < altsMatrices; i++)
+        altsLevel.push_back(list);
+    this->critNames.push_back(altsLevel);
 
-    QVector<int> vec;
-    for (QSpinBox* spin : spins)
-        vec.push_back(spin->value());
-
-
-
-    Dialog wgt(critNames, vec, ui->altsSpin->value());
-    wgt.defaultValue();
-
-    QList<QStringList> tmp;
-
-    if (!this->critNames.isEmpty())
-        for (int i = 0; i < vec.size() + 1; ++i)
-            wgt.setTitles(critNames[i].size(), i, critNames[i]);
-
-
+    Dialog wgt(critNames, ui->altsSpin->value(), this);
     wgt.setModal(true);
-    wgt.setMinimumSize(800, 600);
+    wgt.setWindowState(Qt::WindowMaximized);
+    wgt.setWindowTitle(ui->lineEdit->text());
     wgt.exec();
 }

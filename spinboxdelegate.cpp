@@ -4,9 +4,8 @@
 
 
 
-
 SpinBoxDelegate::SpinBoxDelegate(int rows, int cols, QObject* parent) :
-    QItemDelegate(parent), marked(rows, cols)
+    QItemDelegate(parent), marked(rows, cols), mx(rows, cols)
 {
     qDebug() << "DELEGATE CREATED";
 }
@@ -17,8 +16,12 @@ void SpinBoxDelegate::lockIndex(const QModelIndex& index)
     lockIndexes.push_back(index);
     int row = index.row();
     int col = index.column();
+
     marked(row, col) = 1.0;
     marked(col, row) = 1.0;
+
+    mx(row, col) = 1.0;
+    mx(col, row) = 1.0;
 }
 
 
@@ -26,10 +29,11 @@ void SpinBoxDelegate::lockIndex(const QModelIndex& index)
 QWidget* SpinBoxDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem&,
                                        const QModelIndex& index) const
 {
+    qDebug() << __func__;
     QDoubleSpinBox* doubleSpinBox = new QDoubleSpinBox(parent);
     doubleSpinBox->setMinimum(-1000.0001);
     doubleSpinBox->setMaximum(+1000.0001);
-    doubleSpinBox->setSingleStep(0.25);
+    doubleSpinBox->setSingleStep(0.5);
     doubleSpinBox->setDecimals(3);
 
     for (QModelIndex ix : lockIndexes)
@@ -40,7 +44,6 @@ QWidget* SpinBoxDelegate::createEditor(QWidget* parent, const QStyleOptionViewIt
             break;
         }
     }
-    qDebug() << __func__;
     return doubleSpinBox;
 }
 
@@ -72,24 +75,32 @@ void SpinBoxDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
     marked(col, row) = 1.0;
     marked(row, col) = 1.0;
 
-    bool flag = true;
-    for (int i = 0; i < marked.size1(); i++)
+    mx(row, col) = value;
+    mx(col, row) = 1.0 / value;
+
+
+    for (uint i = 0; i < marked.size1(); i++)
     {
-        for (int j = 0; j < marked.size2(); j++)
+        for (uint j = 0; j < marked.size2(); j++)
         {
             if (marked(i, j) == 0.0)
             {
-                flag = false;
-                break;
+                //матрица не заполнена
+                return;
             }
         }
     }
 
-    if (flag == true)
-    {
+
+    qDebug() << "SpinBoxDelegate EMIT indicate";
+
+    //Если матрица заполнена.
+    //Проверка индекса (CR) согласованности.
+    double indexCR = AlghorithmAHP::getCR(mx);
+    if (indexCR > 0.1)
+        emit indicate(false);
+    else
         emit indicate(true);
-        qDebug() << "SpinBoxDelegate EMIT indicate";
-    }
 }
 
 
@@ -97,6 +108,6 @@ void SpinBoxDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
 void SpinBoxDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option,
                                            const QModelIndex&) const
 {
-    editor->setGeometry(option.rect);
     qDebug() << __func__;
+    editor->setGeometry(option.rect);
 }

@@ -6,7 +6,7 @@
 #include <QList>
 #include <QTableView>
 #include <QLabel>
-#include <vector>
+
 
 
 namespace Ui {
@@ -23,26 +23,28 @@ private:
 
     int levels;
     int alternatives;
-    QVector<QVector<QTableView*>> vecTables;
-    QList<QList<QStringList>> slist;     //имена критериев и альтернатив
+    QList<QList<QTableView*>> tableHierarchy;
+    QList<QList<QStringList>> names;     //имена критериев и альтернатив
 
 
 public:
-    Dialog(QVector<double> vals, QStringList& list, int index,
-            std::vector<std::vector<double>> CR, QWidget* parent = nullptr);
-    Dialog(const QList<QList<QStringList>>& names, QVector<int> nums,
+    Dialog(const QStringList& list, int trueIndex, const QVector<double>& vals,
+           const QVector<QVector<double>>& CR, QWidget* parent = nullptr);
+
+    Dialog(const QList<QList<QStringList>>& names,
            int alternatives, QWidget* parent = nullptr);
+
     ~Dialog();
 
-    void setTitles(int prev, int level, const QList<QStringList>& list);
-    void defaultValue();
     void calculate();
 
-private:
-    QLabel* getLabel(const QString& file, const QRect& rect, QWidget* parent);
 
-private slots:
-    void setIndicator(bool state);
+private:
+    void setDefaultValues();
+    QLabel* getLabel(const QString& file, const QRect& rect,
+                     QWidget* parent) const;
 };
+
+
 
 #endif // DIALOG_H_INCLUDED
