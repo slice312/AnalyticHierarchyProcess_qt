@@ -1,11 +1,13 @@
-#include "mainwindow.h"
 #include <QApplication>
-#include <numeric>
+#include <QDesktopWidget>
+#include <QStyleFactory>
+#include <QFile>
+#include <QStyle>
 #include <QDebug>
-#include "alg_ahp.h"
-#include <iostream>
 
-using std::cout, std::endl;
+#include "mainwindow.h"
+#include "alg_ahp.h"
+
 
 void test1();
 void test2();
@@ -16,6 +18,8 @@ int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
     MainWindow w;
+    w.setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, w.size(),
+                                      qApp->desktop()->availableGeometry()));
     w.show();
 //    Matrix m1 = {
 //        {1,   5,    1},
@@ -53,7 +57,7 @@ int main(int argc, char* argv[])
         test3();
 
 
-    app.setStyle("fusion");
+    QApplication::setStyle(QStyleFactory::create("Fusion"));
     return app.exec();
 }
 
@@ -96,10 +100,10 @@ void test1()
     auto pair = ahp.answer();
     for (double wght : pair.second)
     {
-        cout << wght << endl;
+        qDebug() << wght;
     }
-    cout << "INDEX = " << pair.first << endl;
-    cout << CRs[0] << endl;
+    qDebug() << "INDEX = " << pair.first;
+    qDebug() << CRs[0];
 
     // правильный ответ index = 0, [0.501916; 0,498084]
     // CR = 0.0066
@@ -166,9 +170,9 @@ void test2()
     auto pair = ahp.answer();
     for (double wght : pair.second)
     {
-        cout << wght << endl;
+        qDebug() << wght;
     }
-    cout << "INDEX = " << pair.first << endl;
+    qDebug() << "INDEX = " << pair.first;
 }
 
 
@@ -242,9 +246,9 @@ void test3()
     auto pair = ahp.answer();
     for (double wght : pair.second)
     {
-        cout << wght << endl;
+        qDebug() << wght;
     }
-    cout << "INDEX = " << pair.first << endl;
+    qDebug() << "INDEX = " << pair.first;
 
     // правильный ответ index = 0, [0.44214, 0.25184, 0.30602]
 }

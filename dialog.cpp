@@ -143,10 +143,12 @@ Dialog::Dialog(const QList<QList<QStringList>>& names, int alternatives, QWidget
     }
 
     QPushButton* calcButton = new QPushButton("Вычислить", this);
+    calcButton->setStyleSheet("* {color: qlineargradient(spread:pad, x1:0 y1:0, x2:1 y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));"
+                               "background: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 cyan, stop:1 blue);}");
     mainLayout->addWidget(calcButton, Qt::AlignCenter);
     calcButton->setMaximumWidth(300);
-
     connect(calcButton, &QPushButton::clicked, this, &Dialog::calculate);
+
     setDefaultValues();
 }
 
