@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <initializer_list>
+#include <QDebug>
 
 typedef unsigned int uint;
 
@@ -25,7 +26,7 @@ using ahp::Matrix;
 /*!
   \class ahp::AlghorithmAHP
   \brief Метод анализа иерархий
-  \property levels отчет с 0
+  \property levels               кол-во уровней иерархии отчет с 0
 */
 class ahp::AlghorithmAHP
 {
@@ -47,12 +48,13 @@ public:
     double addMatrix(uint onLevel, const Matrix& mx);
 
     pair<int, vector<double>> answer();
-    double static getCR(const Matrix& m);
+    double static getCR(const Matrix& m);  //AHP Consistency Ratio
 
 
 private:
     vector<double> weightForEachAlternative();
     double combinedWeighting(uint level, uint onlvl, uint alt);
+    double static calcConsistencyRatio(const Matrix& m, const vector<double>& weights);
 };
 
 

@@ -1,8 +1,9 @@
 #include <cassert>
 #include <stdexcept>
 #include <numeric>
+#include <cmath>
 #include "alg_ahp.h"
-#include <QDebug>
+
 
 using namespace ahp;
 
@@ -16,13 +17,11 @@ AlghorithmAHP::AlghorithmAHP(uint alternatives)
 
 
 /*!
-    \property AlghorithmAHP::addLevel
-    \brief Добавляет уровень иерархии с матрицами.
-        При добавлении нормализует матрицы, высчитывает весовые коэф. и
-        коэф. согласованности.
-    \return возвращает коэффициенты согласованности для каждой добавленной матрицы
-
-    \sa addMatrix()
+    \brief AlghorithmAHP::addLevel
+            Добавляет уровень иерархии с матрицами.
+            При добавлении нормализует матрицы, высчитывает весовые коэф. и
+            коэф. согласованности.
+    \return коэффициенты согласованности для каждой добавленной матрицы
 */
 vector<double> AlghorithmAHP::addLevel(const vector<Matrix>& mtxs)
 {
@@ -32,24 +31,17 @@ vector<double> AlghorithmAHP::addLevel(const vector<Matrix>& mtxs)
 
     for (uint i = 0; i < mtxs.size(); i++)
     {
-        Matrix m = mtxs[i];
-        Matrix normalized = m.normalize();
-        matricesOnLevel.emplace_back(normalized);
+        Matrix normalized = mtxs[i].normalize();
+        matricesOnLevel.push_back(normalized);
 
         vector<double> avr = normalized.avrRows();
-        weights[levels].emplace_back(avr);
+        weights[levels].push_back(avr);
 
-        vector<double> nVal = m * avr;
-        double nMax = std::accumulate(nVal.begin(), nVal.end(), 0.0);
-
-        double CI = (nMax - nVal.size()) / (nVal.size() - 1);
-        double RI = (1.98 * (nVal.size() - 2)) / nVal.size();
-        double CR = CI / RI;
-        CR = (RI == 0) ? std::numeric_limits<double>::min() : CR;
+        double CR = calcConsistencyRatio(mtxs[i], avr);
         this->CR[levels].push_back(CR);
     }
 
-    list.emplace_back(matricesOnLevel);
+    list.push_back(matricesOnLevel);
     return CR[levels++];
 }
 
@@ -57,32 +49,24 @@ vector<double> AlghorithmAHP::addLevel(const vector<Matrix>& mtxs)
 
 /*!
  * \brief AlghorithmAHP::addMatrix
- * \param onLevel уровень иерархии, отчет с 0
- * \param mx матрица сравнений
+ * \param onLevel       уровень иерархии, отчет с 0
+ * \param m             матрица сравнений
  * \return коэффициент согласованности добавленной матрицы
  */
-double AlghorithmAHP::addMatrix(uint onLevel, const Matrix& mx)
+double AlghorithmAHP::addMatrix(uint onLevel, const Matrix& m)
 {
-    if (onLevel < levels)
-    {
-        Matrix m = mx;
-        list[onLevel].emplace_back(m.normalize());
+    if (onLevel >= levels || onLevel < 0)
+        throw std::invalid_argument("invalid level");
 
-        vector<double> avr = m.avrRows();
-        weights[onLevel].emplace_back(avr);
+    Matrix normalized = m.normalize();
+    list[onLevel].push_back(normalized);
 
-        vector<double> nVal = m * avr;
-        double nMax = std::accumulate(nVal.begin(), nVal.end(), 0);
+    vector<double> avr = normalized.avrRows();
+    weights[onLevel].push_back(avr);
 
-
-        double CI = (nMax - nVal.size()) / (nVal.size() - 1);
-        double RI = (1.98 * (nVal.size() - 2)) / nVal.size();
-
-        double _CR = CI / RI;
-        CR[onLevel].push_back(_CR);
-        return _CR;
-    }
-    return INT_MIN;
+    double CR = calcConsistencyRatio(m, avr);
+    this->CR[onLevel].push_back(CR);
+    return CR;
 }
 
 
@@ -108,23 +92,14 @@ pair<int, vector<double>> AlghorithmAHP::answer()
 
 double AlghorithmAHP::getCR(const Matrix& m)
 {
-    std::vector<double> avr1 = m.normalize().avrRows();
-    std::vector<double> nvl = m * avr1;
-
-    double nMax = std::accumulate(nvl.begin(), nvl.end(), 0.0);
-
-
-    double CI = (nMax - nvl.size()) / (nvl.size() - 1);
-    // numeri_limits::min добавил чтобы не было деления на 0
-    double RI = (1.98 * (nvl.size() - 2)) / nvl.size();
-    double CR = CI / RI;
-    CR = (RI == 0) ? std::numeric_limits<double>::min() : CR;
-
-    return CR;
+    Matrix normalized = m.normalize();
+    vector<double> avr = normalized.avrRows();
+    return calcConsistencyRatio(m, avr);
 }
 
 
 
+//--------------------------------PRIVATE------------------------------------
 vector<double> AlghorithmAHP::weightForEachAlternative()
 {
     vector<double> result;
@@ -159,6 +134,29 @@ double AlghorithmAHP::combinedWeighting(uint lvl, uint onlvl, uint alt)
         }
     }
     return -1.0;
+}
+
+
+
+/*!
+ * \brief AlghorithmAHP::calcConsRatio
+ * \param m                       ненормализованная матрица
+ * \param avrRows                 относительные весовые коэффициенты
+ * \return индекс согласованности CR
+ */
+double AlghorithmAHP::calcConsistencyRatio(const Matrix& m, const vector<double>& weights)
+{
+    std::vector<double> vec = m * weights;
+    double max = std::accumulate(vec.begin(), vec.end(), 0.0);
+    int n = vec.size();
+
+    double CI = (max - n) / (n - 1);
+    double RI = (1.98 * (n - 2)) / n;
+    double CR = CI / RI;
+
+    if (std::isinf(CR) || std::isnan(CR))
+        CR = 0;
+    return CR;
 }
 
 
