@@ -1,33 +1,80 @@
 #include <QProcess>
 #include <QDebug>
+#include <QFile>
+#include <QPair>
+#include <QQueue>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "dialog.h"
-#include "input.h"
+#include "editableTreeView/treemodel.h"
 
 
 
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
-    ui(new Ui::MainWindow)
+
+MainWindow::MainWindow(QWidget* parent) :
+    QMainWindow(parent)
 {
-    ui->setupUi(this);
-    ui->scrollArea->setMinimumWidth(250);
-    ui->scrollArea->setMinimumHeight(150);
-    ui->label1->setMinimumWidth(150);
+    setupUi(this);
+    toolbar->setMovable(false);
+    resize(600, 500);
 
-    this->spins.push_back(ui->spin);
-    this->attachments.push_back(ui->toolbut);
+    mTreeView->setAlternatingRowColors(true);
+    mTreeView->setSelectionBehavior(QAbstractItemView::SelectItems);
+    mTreeView->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+    mTreeView->setAnimated(true);
+    mTreeView->setAllColumnsShowFocus(true);
+
+    QFile file(":/default.txt");
+    file.open(QIODevice::ReadOnly);
+    TreeModel* model = new TreeModel({"Критерии"}, file.readAll(), mTreeView);
+    file.close();
+    model->setObjectName("MY_MODEL");
+    //    TreeModel* model = new TreeModel({"name", "state"});
+    //    model->insertRow(0);
+    //    auto index = model->index(0, 0);
+    //    model->setData(index, "First");
+    //    model->setData(model->index(0, 1), "[No data]");
+
+    mTreeView->setObjectName("MY_TREE_VIEW");
+
+    mTreeView->setModel(model);
+
+    for (int column = 0; column < model->columnCount(); column++)
+        mTreeView->resizeColumnToContents(column);
+
+
+    connect(mTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &MainWindow::updateActions);
+    connect(mInsertRowAction, &QAction::triggered, this, &MainWindow::insertRow);
+    connect(mRemoveRowAction, &QAction::triggered, this, &MainWindow::removeRow);
+    connect(mInsertChildAction, &QAction::triggered, this, &MainWindow::insertChild);
+    updateActions();
+//    on_mOkButton_clicked();
 }
 
 
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+    //    dumpObjectTree();
 }
 
+
+
+void MainWindow::updateActions()
+{
+    //    bool hasSelection = !view->selectionModel()->selection().isEmpty();
+    bool hasCurrent = mTreeView->selectionModel()->currentIndex().isValid();
+    mRemoveRowAction->setEnabled(hasCurrent);
+    mInsertChildAction->setEnabled(hasCurrent);
+
+    if (hasCurrent)
+    {
+        mTreeView->closePersistentEditor(mTreeView->selectionModel()->currentIndex());
+    }
+}
 
 
 void MainWindow::on_resetButton_clicked()
@@ -38,62 +85,13 @@ void MainWindow::on_resetButton_clicked()
 
 
 
-void MainWindow::on_addButton_clicked()
-{
-    QString str = "Ур.";
-    int row = ui->criteriaLayout->rowCount();
-    str += QString::number(row + 1);
-    str += "  критерии";
 
-    QSpinBox* newSpin = new QSpinBox();
-    QToolButton* toolbut = new QToolButton();
-
-    ui->criteriaLayout->addWidget(new QLabel(str), row, 0, 1, 1);
-    ui->criteriaLayout->addWidget(newSpin, row, 1, 1, 1);
-    ui->criteriaLayout->addWidget(toolbut, row, 2, 1, 1);
-
-    toolbut->setText("...");
-    connect(toolbut, &QToolButton::clicked, this, &MainWindow::on_toolbut_clicked);
-
-    this->spins.push_back(newSpin);
-    this->attachments.push_back(toolbut);
-}
-
-
-
-void MainWindow::on_toolbut_clicked()
-{
-    int index = -1;
-    for (int i = 0; i < attachments.size(); i++)
-    {
-        if (sender() == attachments[i])
-        {
-            index = i;
-            break;
-        }
-    }
-
-    int groups = (index > 0)
-            ? spins[index - 1]->value()
-            : 1;
-    int lines = spins[index]->value() * groups;
-
-    Input form(lines, groups, this);
-    form.setModal(true);
-    form.exec();
-
-    if (critNames.size() > index)
-        critNames[index] = form.getNames();
-    else
-        critNames.push_back(form.getNames());
-    qDebug() << critNames[index];
-}
 
 
 
 void MainWindow::on_altsSpin_valueChanged(int value)
 {
-    QVBoxLayout* layout = ui->altsNameVLayout;
+    QVBoxLayout* layout = mAltsNameVLayout;
 
     while (value < layout->count())
     {
@@ -113,35 +111,148 @@ void MainWindow::on_altsSpin_valueChanged(int value)
 
 
 
-void MainWindow::on_okButton_clicked()
+void MainWindow::on_mOkButton_clicked()
 {
-    int altsMatrices = 1; //кол-во матриц для альтернатив
-    QVector<int> vec;
-    for (QSpinBox* spin : this->spins)
-    {
-        int val = spin->value();
-        vec.push_back(val);
-        altsMatrices *= val;
-    }
+    // QList<QList<QTableView*>> tableHierarchy;
+
+    QAbstractItemModel* model = mTreeView->model();
+
+    int rows = model->rowCount();
+    //    for (int level = 0; level < model->rowCount(); level++)
+    //    {
+    //        QModelIndex index = model->index(level, 0);
+    //        index.data();
+    //        int ones = model->rowCount(index);
+    //        for (int i = 0; i < 3; ++i) {
+    //        }
+    //    }
+
+    // TODO обход дерева в ширину
+    // сначала в корню -                   это критерии первого уровня
+    // потом по всем детям, если есть -    это критерии второго уровня и т.д.
+
+    QQueue<QPair<QModelIndex, bool>> que;
 
 
-    //добавить названия альтернатив
-    QVBoxLayout* layout = ui->altsNameVLayout;
-    QStringList list;
-    for (int i = 0; i < layout->count(); i++)
-    {
-        auto edit = qobject_cast<QLineEdit*>(layout->itemAt(i)->widget());
-        list.push_back(edit->text());
-    }
+    QModelIndex index = model->index(0, 0).parent();
+    bool check = index.isValid();
+    que.enqueue(qMakePair(index, false));
 
-    QList<QStringList> altsLevel;
-    for (int i = 0; i < altsMatrices; i++)
-        altsLevel.push_back(list);
-    this->critNames.push_back(altsLevel);
 
-    Dialog wgt(critNames, ui->altsSpin->value(), this);
-    wgt.setModal(true);
-    wgt.setWindowState(Qt::WindowMaximized);
-    wgt.setWindowTitle(ui->lineEdit->text());
-    wgt.exec();
+//    int level = 0;
+//    QVector<QStringList> levels;
+//    levels.resize(3);
+
+
+//    while (!que.empty())
+//    {
+//        int level_size = que.size();
+//        while (level_size--)
+//        {
+//            auto pair = que.dequeue();
+//            pair.second = true;
+
+//            int count = model->rowCount(pair.first);
+//            for (int i = 0; i < count; i++)
+//            {
+//                //-----------------------------
+//                QModelIndex ix = model->index(i, 0, pair.first);
+//                bool isValid = ix.isValid();
+//                QVariant name = model->data(ix);
+
+//                levels[level].append(name.toString());
+//                //-----------------------------
+
+//                if (isValid)
+//                    que.enqueue(qMakePair(ix, false));
+//            }
+//        }
+//        level++;
+//    }
+
+//    qDebug() << "LEVEL=" << level;
+//    qDebug() << "LEVEL=" << level;
+
+//    for (int level = 0; ; level++)
+//    {
+//        QStringList onLevel;
+//        for (int i = 0; i < model->rowCount(); i++)
+//        {
+//            onLevel.append(model->data(model->index(i, 0)).toString());
+//        }
+//        levels.append(onLevel);
+
+//    }
+
+        Dialog wgt(mTreeView->model(), mAltsSpin->value(), this);
+        wgt.setModal(true);
+        wgt.setWindowState(Qt::WindowMaximized);
+        wgt.exec();
 }
+
+
+
+void MainWindow::insertRow()
+{
+    QModelIndex index = mTreeView->selectionModel()->currentIndex();
+    QAbstractItemModel* model = mTreeView->model();
+
+    if (!model->insertRow(index.row() + 1, index.parent()))
+        return;
+
+    for (int column = 0; column < model->columnCount(index.parent()); column++)
+    {
+        QModelIndex child = model->index(index.row() + 1, column, index.parent());
+        model->setData(child, QVariant("[No data]"), Qt::EditRole);
+    }
+
+    mTreeView->selectionModel()->
+            setCurrentIndex(model->index(index.row() + 1, 0, index.parent()),
+                            QItemSelectionModel::ClearAndSelect);
+    updateActions();
+}
+
+
+
+void MainWindow::insertChild()
+{
+    QModelIndex index = mTreeView->selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+    QAbstractItemModel* model = mTreeView->model();
+    if (model->columnCount(index) == 0)
+    {
+        if (!model->insertColumn(0, index))
+            return;
+    }
+
+    if (!model->insertRow(0, index))
+        return;
+
+    for (int column = 0; column < model->columnCount(index); column++)
+    {
+        QModelIndex child = model->index(0, column, index);
+        model->setData(child, QVariant("[No data]"), Qt::EditRole);
+        if (!model->headerData(column, Qt::Horizontal).isValid())
+        {
+            model->setHeaderData(column, Qt::Horizontal, QVariant("[No header]"),
+                                 Qt::EditRole);
+        }
+    }
+    mTreeView->selectionModel()->setCurrentIndex(model->index(0, 0, index),
+                                                 QItemSelectionModel::ClearAndSelect);
+    updateActions();
+}
+
+
+
+void MainWindow::removeRow()
+{
+    QModelIndex index = mTreeView->selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+    QAbstractItemModel* model = mTreeView->model();
+    if (model->removeRow(index.row(), index.parent()))
+        updateActions();
+}
+

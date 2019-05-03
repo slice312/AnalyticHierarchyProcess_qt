@@ -13,8 +13,8 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,0,1">
+  <widget class="QWidget" name="mCentralWidget">
+   <layout class="QVBoxLayout" name="mMainLayout" stretch="0,0,0,0,1">
     <property name="leftMargin">
      <number>75</number>
     </property>
@@ -22,90 +22,35 @@
      <number>75</number>
     </property>
     <item>
-     <widget class="QScrollArea" name="scrollArea">
-      <property name="widgetResizable">
-       <bool>true</bool>
+     <widget class="QTreeView" name="mTreeView"/>
+    </item>
+    <item>
+     <widget class="QPushButton" name="mOkButton">
+      <property name="text">
+       <string>ОК</string>
       </property>
-      <widget class="QWidget" name="scrollAreaWidgetContents">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>388</width>
-         <height>192</height>
-        </rect>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <widget class="QLineEdit" name="lineEdit">
-          <property name="text">
-           <string>Цель...</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QGridLayout" name="criteriaLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label1">
-            <property name="text">
-             <string>Ур.1  критерии</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QSpinBox" name="spin">
-            <property name="value">
-             <number>2</number>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QToolButton" name="toolbut">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QPushButton" name="addButton">
-          <property name="text">
-           <string>+</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="resetButton">
-          <property name="text">
-           <string>Сбросить</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="okButton">
-          <property name="text">
-           <string>ОК</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="mResetButton">
+      <property name="text">
+       <string>Сбросить</string>
+      </property>
      </widget>
     </item>
     <item>
      <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="1">
-       <widget class="QSpinBox" name="altsSpin">
-        <property name="value">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label2">
         <property name="text">
          <string>Альтернативы</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="mAltsSpin">
+        <property name="value">
+         <number>0</number>
         </property>
        </widget>
       </item>
@@ -125,10 +70,10 @@
             <x>0</x>
             <y>0</y>
             <width>370</width>
-            <height>174</height>
+            <height>105</height>
            </rect>
           </property>
-          <layout class="QVBoxLayout" name="altsNameVLayout"/>
+          <layout class="QVBoxLayout" name="mAltsNameVLayout"/>
          </widget>
         </widget>
        </item>
@@ -137,9 +82,69 @@
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolbar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="mInsertRowAction"/>
+   <addaction name="mRemoveRowAction"/>
+   <addaction name="mInsertChildAction"/>
+  </widget>
+  <action name="mInsertRowAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/pics/minus.png</normaloff>:/pics/minus.png</iconset>
+   </property>
+   <property name="text">
+    <string>insertRow</string>
+   </property>
+   <property name="toolTip">
+    <string>Ctrl + R</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="mRemoveRowAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/pics/plus.png</normaloff>:/pics/plus.png</iconset>
+   </property>
+   <property name="text">
+    <string>removeRow</string>
+   </property>
+   <property name="toolTip">
+    <string>Ctrl + X</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="mInsertChildAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/pics/network.svg</normaloff>:/pics/network.svg</iconset>
+   </property>
+   <property name="text">
+    <string>insertChild</string>
+   </property>
+   <property name="toolTip">
+    <string>Ctrl + E</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -5,26 +5,18 @@
 #include <QSpinBox>
 #include <QLineEdit>
 #include <QStringList>
+#include "ui_mainwindow.h"
 
 
 
-
-namespace Ui {
-class MainWindow;
-}
+class TreeModel;
 
 
-
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow,  private Ui::MainWindow
 {
     Q_OBJECT
 
-
 private:
-    Ui::MainWindow* ui;
-
-    QList<QSpinBox*> spins;        //спины с кол-вом критериев на уровне
-    QList<QToolButton*> attachments;
 
     QList<QLineEdit*> lineEdits;   //для альтернатив
 
@@ -35,12 +27,18 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
+public slots:
+    void updateActions();
+
 private slots:
     void on_resetButton_clicked();
-    void on_addButton_clicked();
-    void on_toolbut_clicked();
     void on_altsSpin_valueChanged(int value);
-    void on_okButton_clicked();
+    void on_mOkButton_clicked();
+
+    void insertRow();
+    void insertChild();
+    void removeRow();
+
 };
 
 

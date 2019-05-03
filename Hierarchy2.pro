@@ -22,7 +22,8 @@ SOURCES += \
         spinboxdelegate.cpp \
         console.cpp \
         alg_ahp.cpp \
-    input.cpp
+        editableTreeView\treeitem.cpp \
+        editableTreeView\treemodel.cpp
 
 
 HEADERS += \
@@ -30,12 +31,12 @@ HEADERS += \
         dialog.h \
         spinboxdelegate.h \
         alg_ahp.h \
-    input.h
+        editableTreeView\treeitem.h \
+        editableTreeView\treemodel.h
+
 
 FORMS += \
-        mainwindow.ui \
-        dialog.ui \
-    input.ui
+        mainwindow.ui
 
 RESOURCES += \
         res.qrc

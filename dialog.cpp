@@ -3,6 +3,7 @@
 #include <QPushButton>
 #include <QHeaderView>
 #include <QDebug>
+#include <QQueue>
 
 #include "dialog.h"
 #include "ui_dialog.h"
@@ -13,13 +14,22 @@
 
 Dialog::Dialog(const QStringList& list, int trueIndex, const QVector<double>& vals,
                const QVector<QVector<double>>& CR, QWidget* parent) :
-    QDialog(parent), ui(new Ui::Dialog())
+    QDialog(parent)
 {
-    ui->setupUi(this);
-    this->setMinimumSize(500, 500);
+    QVBoxLayout* _lay = new QVBoxLayout(this);
+    QScrollArea* scrollArea = new QScrollArea(this);
+    QWidget* scrollAreaWidget = new QWidget();
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setWidget(scrollAreaWidget);
+    _lay->addWidget(scrollArea);
+    _lay->setAlignment(Qt::AlignCenter);
+    this->setMinimumSize(680, 450);
 
-    QVBoxLayout* mainLayout = new QVBoxLayout(ui->scrollAreaWidgetContents);
+    QVBoxLayout* mainLayout = new QVBoxLayout(scrollAreaWidget);
+    mainLayout->setAlignment(Qt::AlignCenter);
     mainLayout->setMargin(20);
+    scrollAreaWidget->setLayout(mainLayout);
+
 
     QTextEdit* text = new QTextEdit("\n");
     text->setReadOnly(true);
@@ -33,7 +43,7 @@ Dialog::Dialog(const QStringList& list, int trueIndex, const QVector<double>& va
     if (trueIndex >= 0)
     {
         text->append("Лучший вариант: \"" + list[trueIndex] + "\" \t" +
-                   QString::number(vals[trueIndex]));
+                     QString::number(vals[trueIndex]));
     }
     mainLayout->addWidget(text);
 
@@ -51,63 +61,51 @@ Dialog::Dialog(const QStringList& list, int trueIndex, const QVector<double>& va
 
 
 
-Dialog::Dialog(const QList<QList<QStringList>>& names, int alternatives, QWidget* parent) :
-    QDialog(parent, Qt::Window), ui(new Ui::Dialog())
+Dialog::Dialog(QAbstractItemModel* tree, int alternatives, QWidget* parent) :
+    QDialog(parent, Qt::Window)
 {
-    ui->setupUi(this);
-    this->setMinimumSize(680, 450);
-    this->names = names;
-    this->levels = names.size();
+    init();
     this->alternatives = alternatives;
 
-    QVBoxLayout* mainLayout = new QVBoxLayout(ui->scrollAreaWidgetContents);
-    mainLayout->setAlignment(Qt::AlignCenter);
-    ui->scrollAreaWidgetContents->setLayout(mainLayout);
-
-
-    // Построение TableView для каждого уровня декомпозиции.
     QList<QTableView*> tablesOnLevel;
-    QStringList chained;
 
-    for (int lvl = 0; lvl < levels; lvl++)
+    QQueue<QModelIndex> que;
+    const QModelIndex root= tree->index(0, 0).parent();
+    que.enqueue(root);
+
+    while (!que.empty())
     {
-        QScrollArea* scroll = new QScrollArea(ui->scrollAreaWidgetContents);
+        QScrollArea* scroll = new QScrollArea(mScrollAreaWidget);
         scroll->setWidgetResizable(true);
-        mainLayout->addWidget(scroll);
+        mMainLayout->addWidget(scroll);
         QWidget* widget = new QWidget();
         scroll->setWidget(widget);
         QHBoxLayout* hlayout = new QHBoxLayout(widget);
 
-        chained.clear();
-        if (lvl > 0)
+        int level_size = que.size();
+        while (level_size-- > 0)
         {
-            for (int i = 0; i < names[lvl - 1].size(); i++)
+            QStringList names;
+            const QModelIndex index = que.dequeue();
+
+            for (int i = 0; i < tree->rowCount(index); i++)
             {
-                for (int j = 0; j < names[lvl - 1][i].size(); j++)
-                {
-                    chained.push_back(names[lvl - 1][i][j]);
-                }
+                QModelIndex ix = tree->index(i, 0, index);
+                if (ix.isValid()) que.enqueue(ix);
+                QVariant name = tree->data(ix);
+                names.append(name.toString());
             }
-        }
-        else
-            chained.push_back("");
 
-
-        for (int t = 0, tables = names[lvl].size(); t < tables; t++) // tables - кол-во таблиц на уровне
-        {
+            if (names.isEmpty()) continue;
             QTableView* table = new QTableView();
-            tablesOnLevel.push_back(table);
+            tablesOnLevel.append(table);
             QStandardItemModel* model = new QStandardItemModel(table);
 
-            //Матрицы всегда квадратные.
-            //уровень -> таблица-> кол-во строк.
-            int rowcol = names[lvl][t].size();
-
+            int rowcol = names.size();
             model->setRowCount(rowcol);
             model->setColumnCount(rowcol);
-
-            model->setHorizontalHeaderLabels(names[lvl][t]);
-            model->setVerticalHeaderLabels(names[lvl][t]);
+            model->setHorizontalHeaderLabels(names);
+            model->setVerticalHeaderLabels(names);
 
             table->setModel(model);
             table->setMinimumWidth(250);  //TODO размеры
@@ -129,35 +127,104 @@ Dialog::Dialog(const QList<QList<QStringList>>& names, int alternatives, QWidget
             QWidget* info = new QWidget();
             QVBoxLayout* v = new QVBoxLayout();
             v->setContentsMargins(0, 0, 0, info->height() * 0.25);
-            qDebug() << info->height();
 
-            v->addWidget(new QLabel(chained[t]));
+            v->addWidget(new QLabel(tree->data(index).toString()));
             v->addWidget(label);
             info->setLayout(v);
 
             hlayout->addWidget(info);
             hlayout->addWidget(table);
+            names.clear();
         }
         this->tableHierarchy.push_back(tablesOnLevel);
         tablesOnLevel.clear();
     }
 
-    QPushButton* calcButton = new QPushButton("Вычислить", this);
-    calcButton->setStyleSheet("* {color: qlineargradient(spread:pad, x1:0 y1:0, x2:1 y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));"
-                               "background: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 cyan, stop:1 blue);}");
-    mainLayout->addWidget(calcButton, Qt::AlignCenter);
-    calcButton->setMaximumWidth(300);
-    connect(calcButton, &QPushButton::clicked, this, &Dialog::calculate);
 
+    //TODO обход в глубину для уровня альтернатив
+    QScrollArea* scroll = new QScrollArea(mScrollAreaWidget);
+    scroll->setWidgetResizable(true);
+    mMainLayout->addWidget(scroll);
+    QWidget* widget = new QWidget();
+    scroll->setWidget(widget);
+    QHBoxLayout* hlayout = new QHBoxLayout(widget);
+    this->tmplayout = hlayout;
+    dfs(tree, tree->index(0, 0).parent());
+
+
+    QPushButton* calcButton = new QPushButton("Вычислить", this);
+    mMainLayout->addWidget(calcButton, Qt::AlignCenter);
+    //    calcButton->setMaximumWidth(300);
+    connect(calcButton, &QPushButton::clicked, this, &Dialog::calculate);
     setDefaultValues();
 }
+
+
+
+void Dialog::dfs(QAbstractItemModel* tree, const QModelIndex& index)
+{
+    const int count = tree->rowCount(index);
+
+    if (count == 0)
+    {
+        QTableView* table = new QTableView();
+//        tablesOnLevel.append(table); //TODO save
+        QStandardItemModel* model = new QStandardItemModel(table);
+
+
+        int rowcol = 3;  //из альтернаитв
+        model->setRowCount(rowcol);
+        model->setColumnCount(rowcol);
+//        model->setHorizontalHeaderLabels(names);
+//        model->setVerticalHeaderLabels(names);
+
+        table->setModel(model);
+        table->resize(200, 100);
+        table->setMinimumWidth(350);
+        table->setMinimumHeight(200);
+        table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+        table->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+//        table->setMinimumWidth(250);  //TODO размеры
+//        table->setMinimumHeight(r200);
+
+        SpinBoxDelegate* delegate =
+                new SpinBoxDelegate(rowcol, rowcol, this);
+        table->setItemDelegate(delegate);
+
+        QLabel* label = getLabel(":/pics/indicator_gray.svg", QRect(10, 10, 25, 25), this);
+        connect(delegate, &SpinBoxDelegate::indicate, [label](bool state)
+        {
+            if (state == true)
+                label->setPixmap(QIcon(":/pics/indicator_green.svg").pixmap(label->size()));
+            else
+                label->setPixmap(QIcon(":/pics/indicator_red.svg").pixmap(label->size()));
+        });
+
+        QWidget* info = new QWidget();
+        QVBoxLayout* v = new QVBoxLayout();
+        v->setContentsMargins(0, 0, 0, info->height() * 0.25);
+
+        v->addWidget(new QLabel(tree->data(index).toString()));
+        v->addWidget(label);
+        info->setLayout(v);
+
+        this->tmplayout->addWidget(info);
+        this->tmplayout->addWidget(table);
+    }
+
+    for (int i = 0; i < count; i++)
+    {
+        QModelIndex ix = tree->index(i, 0, index);
+        dfs(tree, ix);
+    }
+}
+
 
 
 
 Dialog::~Dialog()
 {
     dumpObjectTree();
-    delete ui;
 }
 
 
@@ -203,6 +270,25 @@ void Dialog::calculate()
     wgt.setWindowTitle("Ответ");
     wgt.setMinimumSize(300, 250);
     wgt.exec();
+}
+
+
+
+void Dialog::init()
+{
+    QVBoxLayout* _lay = new QVBoxLayout(this);
+    QScrollArea* scrollArea = new QScrollArea(this);
+    mScrollAreaWidget = new QWidget();
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setWidget(mScrollAreaWidget);
+    _lay->addWidget(scrollArea);
+    _lay->setAlignment(Qt::AlignCenter);
+    this->setMinimumSize(680, 450);
+
+    mMainLayout = new QVBoxLayout(mScrollAreaWidget);
+    mMainLayout->setAlignment(Qt::AlignCenter);
+    mMainLayout->setMargin(20);
+    mScrollAreaWidget->setLayout(mMainLayout);
 }
 
 
