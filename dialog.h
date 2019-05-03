@@ -7,11 +7,13 @@
 #include <QTableView>
 #include <QVBoxLayout>
 #include <QLabel>
+#include "ui_dialog.h"
+#include "spinboxdelegate.h"
 
 
 
 
-class Dialog : public QDialog
+class Dialog : public QDialog, private Ui::Dialog
 {
     Q_OBJECT
 
@@ -21,9 +23,7 @@ private:
     QList<QList<QTableView*>> tableHierarchy;
     QList<QList<QStringList>> names;     //имена критериев и альтернатив
 
-    QVBoxLayout* mMainLayout;
-    QWidget* mScrollAreaWidget;
-    QHBoxLayout* tmplayout; //TODO  убрать
+
 
 
 public:
@@ -38,11 +38,12 @@ public:
 
 
 private:
-    void init();
-    void dfs(QAbstractItemModel* tree, const QModelIndex& index);
+    void bfs(QAbstractItemModel* tree);
+    void dfs(QAbstractItemModel* tree);
     void setDefaultValues();
     QLabel* getLabel(const QString& file, const QRect& rect,
                      QWidget* parent) const;
+    void connectIndicator(QLabel* receiver, const SpinBoxDelegate* sender);
 };
 
 

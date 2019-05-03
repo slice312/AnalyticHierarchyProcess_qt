@@ -139,7 +139,7 @@ double AlghorithmAHP::combinedWeighting(uint lvl, uint onlvl, uint alt)
 
 
 /*!
- * \brief AlghorithmAHP::calcConsRatio
+ * \brief AlghorithmAHP::calcConsistencyRatio
  * \param m                       ненормализованная матрица
  * \param avrRows                 относительные весовые коэффициенты
  * \return индекс согласованности CR
@@ -147,10 +147,10 @@ double AlghorithmAHP::combinedWeighting(uint lvl, uint onlvl, uint alt)
 double AlghorithmAHP::calcConsistencyRatio(const Matrix& m, const vector<double>& weights)
 {
     std::vector<double> vec = m * weights;
-    double max = std::accumulate(vec.begin(), vec.end(), 0.0);
+    double nmax = std::accumulate(vec.begin(), vec.end(), 0.0);
     int n = vec.size();
 
-    double CI = (max - n) / (n - 1);
+    double CI = (nmax - n) / (n - 1);
     double RI = (1.98 * (n - 2)) / n;
     double CR = CI / RI;
 

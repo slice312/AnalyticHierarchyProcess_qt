@@ -48,13 +48,13 @@ public:
     double addMatrix(uint onLevel, const Matrix& mx);
 
     pair<int, vector<double>> answer();
-    double static getCR(const Matrix& m);  //AHP Consistency Ratio
+    static double getCR(const Matrix& m);  //AHP Consistency Ratio
 
 
 private:
     vector<double> weightForEachAlternative();
     double combinedWeighting(uint level, uint onlvl, uint alt);
-    double static calcConsistencyRatio(const Matrix& m, const vector<double>& weights);
+    static double calcConsistencyRatio(const Matrix& m, const vector<double>& weights);
 };
 
 

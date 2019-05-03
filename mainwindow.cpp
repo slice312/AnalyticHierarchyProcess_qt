@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(mRemoveRowAction, &QAction::triggered, this, &MainWindow::removeRow);
     connect(mInsertChildAction, &QAction::triggered, this, &MainWindow::insertChild);
     updateActions();
-//    on_mOkButton_clicked();
+    on_mOkButton_clicked();
 }
 
 

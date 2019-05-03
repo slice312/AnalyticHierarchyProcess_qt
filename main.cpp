@@ -50,11 +50,11 @@ int main(int argc, char* argv[])
             {5, 1}
         };
 
-        qDebug() << "m1=" << AlghorithmAHP::getCR(m);
-        qDebug() << "check" << (AlghorithmAHP::getCR(m) > 0.1);
+//        qDebug() << "m1=" << AlghorithmAHP::getCR(m);
+//        qDebug() << "check" << (AlghorithmAHP::getCR(m) > 0.1);
     //    test1();
     //    test2();
-        test3();
+//        test3();
 
 
     QApplication::setStyle(QStyleFactory::create("Fusion"));

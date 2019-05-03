@@ -36,6 +36,7 @@ HEADERS += \
 
 
 FORMS += \
+        dialog.ui \
         mainwindow.ui
 
 RESOURCES += \

@@ -1,8 +1,6 @@
 Martin						none
-    Reputation					none
-        smart					none
-        cost					none
-    Location					none
+    Reputation				none
+    Location				none
 Jane						none
-    shops					none
-    pubs					none
+    Reputation				none
+    Location				none
