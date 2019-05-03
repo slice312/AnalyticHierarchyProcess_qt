@@ -1,3 +1,4 @@
+#include <QDebug>
 #include "treeitem.h"
 
 
@@ -12,6 +13,7 @@ TreeItem::TreeItem(const QVector<QVariant>& data, TreeItem* parent)
 
 TreeItem::~TreeItem()
 {
+    qDebug() << "deleted TreeItem, " << mItemData;
     qDeleteAll(mChildItems);
 }
 

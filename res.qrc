@@ -7,5 +7,6 @@
         <file>pics/minus.png</file>
         <file>pics/network.svg</file>
         <file>pics/plus.png</file>
+        <file>pics/arrows-reset.png</file>
     </qresource>
 </RCC>

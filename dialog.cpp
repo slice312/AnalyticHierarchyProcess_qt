@@ -63,29 +63,29 @@ Dialog::Dialog(const QStringList& list, int trueIndex, const QVector<double>& va
 
 
 
-Dialog::Dialog(QAbstractItemModel* tree, int alternatives, QWidget* parent) :
+Dialog::Dialog(QAbstractItemModel* tree, const QStringList& alternatives, QWidget* parent) :
     QDialog(parent, Qt::Window)
 {
     setupUi(this);
-    this->alternatives = alternatives;
+    this->mAlternatives = alternatives;
     /*
      * Сначала обход в ширину для всех уровней критериев.
      * Потом обход в глубину для уровня альтернатив.
      */
     bfs(tree);
     dfs(tree);
-//        QPushButton* calcButton = new QPushButton("Вычислить", this);
-//        __vLayout2->addWidget(calcButton, Qt::AlignCenter);
-//        //    calcButton->setMaximumWidth(300);
-        connect(mCalcButton, &QPushButton::clicked, this, &Dialog::calculate);
-        setDefaultValues();
+    //        QPushButton* calcButton = new QPushButton("Вычислить", this);
+    //        __vLayout2->addWidget(calcButton, Qt::AlignCenter);
+    //        //    calcButton->setMaximumWidth(300);
+    connect(mCalcButton, &QPushButton::clicked, this, &Dialog::calculate);
+    setDefaultValues();
 }
 
 
 
 void Dialog::bfs(QAbstractItemModel* tree)
 {
-    QList<QTableView*> tablesOnLevel; //TODO  заполнить tabkeHierarchy
+    QList<QTableView*> tablesOnLevel;
     QQueue<QModelIndex> que;
     que.enqueue(tree->index(0, 0).parent()); //root
 
@@ -182,14 +182,13 @@ void Dialog::dfs(QAbstractItemModel* tree)
         if (count == 0)
         {
             QTableView* table = new QTableView();
-            //        tablesOnLevel.append(table); //TODO save
             QStandardItemModel* model = new QStandardItemModel(table);
 
             int rowcol = 3;  //из альтернаитв
             model->setRowCount(rowcol);
             model->setColumnCount(rowcol);
-            //        model->setHorizontalHeaderLabels(names);
-            //        model->setVerticalHeaderLabels(names);
+            model->setHorizontalHeaderLabels(mAlternatives);
+            model->setVerticalHeaderLabels(mAlternatives);
 
             table->setModel(model);
             table->resize(200, 100);
@@ -244,7 +243,7 @@ void Dialog::calculate()
 {
     qDebug() << "clicked CALCULATE";
 
-    AlghorithmAHP ahp(3); //FIXME hardcode
+    AlghorithmAHP ahp(mAlternatives.size());
     QVector<QVector<double>> indexCR;
 
     std::vector<Matrix> vec;
@@ -271,8 +270,7 @@ void Dialog::calculate()
     }
 
     auto pair = ahp.answer();
-    QStringList altsNames = {"A", "B", "C"};/*names.back().back();*/
-    Dialog wgt(altsNames, pair.first,
+    Dialog wgt(mAlternatives, pair.first,
                QVector<double>::fromStdVector(pair.second),
                indexCR, this);
 

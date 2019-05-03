@@ -16,29 +16,22 @@ class MainWindow : public QMainWindow,  private Ui::MainWindow
 {
     Q_OBJECT
 
-private:
-
-    QList<QLineEdit*> lineEdits;   //для альтернатив
-
-    QList<QList<QStringList>> critNames; //имена критериев и альтернатив
-
-
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-public slots:
-    void updateActions();
+
 
 private slots:
-    void on_resetButton_clicked();
-    void on_altsSpin_valueChanged(int value);
+    void updateActions();
+
+    void on_mAltsSpin_valueChanged(int value);
     void on_mOkButton_clicked();
+    void reset();
 
     void insertRow();
     void insertChild();
     void removeRow();
-
 };
 
 

@@ -17,12 +17,25 @@ MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent)
 {
     setupUi(this);
-    toolbar->setMovable(false);
+    __toolbar->setMovable(false);
+
+
+    auto  tb = __toolbar;
+    QWidget* empty = new QWidget();
+    empty->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    empty->setObjectName("spacer");
+    tb->addWidget(empty);
+    tb->addAction(mResetAction);
+    tb->dumpObjectTree();
+
+
+
     resize(600, 500);
 
     mTreeView->setAlternatingRowColors(true);
     mTreeView->setSelectionBehavior(QAbstractItemView::SelectItems);
     mTreeView->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+    mTreeView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     mTreeView->setAnimated(true);
     mTreeView->setAllColumnsShowFocus(true);
 
@@ -31,18 +44,11 @@ MainWindow::MainWindow(QWidget* parent) :
     TreeModel* model = new TreeModel({"Критерии"}, file.readAll(), mTreeView);
     file.close();
     model->setObjectName("MY_MODEL");
-    //    TreeModel* model = new TreeModel({"name", "state"});
-    //    model->insertRow(0);
-    //    auto index = model->index(0, 0);
-    //    model->setData(index, "First");
-    //    model->setData(model->index(0, 1), "[No data]");
 
     mTreeView->setObjectName("MY_TREE_VIEW");
-
     mTreeView->setModel(model);
 
-    for (int column = 0; column < model->columnCount(); column++)
-        mTreeView->resizeColumnToContents(column);
+
 
 
     connect(mTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -50,8 +56,8 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(mInsertRowAction, &QAction::triggered, this, &MainWindow::insertRow);
     connect(mRemoveRowAction, &QAction::triggered, this, &MainWindow::removeRow);
     connect(mInsertChildAction, &QAction::triggered, this, &MainWindow::insertChild);
+    connect(mResetAction, &QAction::triggered, this, &MainWindow::reset);
     updateActions();
-    on_mOkButton_clicked();
 }
 
 
@@ -65,33 +71,20 @@ MainWindow::~MainWindow()
 
 void MainWindow::updateActions()
 {
-    //    bool hasSelection = !view->selectionModel()->selection().isEmpty();
     bool hasCurrent = mTreeView->selectionModel()->currentIndex().isValid();
     mRemoveRowAction->setEnabled(hasCurrent);
     mInsertChildAction->setEnabled(hasCurrent);
 
-    if (hasCurrent)
-    {
-        mTreeView->closePersistentEditor(mTreeView->selectionModel()->currentIndex());
-    }
-}
-
-
-void MainWindow::on_resetButton_clicked()
-{
-    qApp->quit();
-    QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+    //Отменяет редактирование model item'а
+    //    if (hasCurrent)
+    //        mTreeView->closePersistentEditor(mTreeView->selectionModel()->currentIndex());
 }
 
 
 
-
-
-
-
-void MainWindow::on_altsSpin_valueChanged(int value)
+void MainWindow::on_mAltsSpin_valueChanged(int value)
 {
-    QVBoxLayout* layout = mAltsNameVLayout;
+    QVBoxLayout* layout = mAltsNameLayout;
 
     while (value < layout->count())
     {
@@ -139,62 +132,80 @@ void MainWindow::on_mOkButton_clicked()
     que.enqueue(qMakePair(index, false));
 
 
-//    int level = 0;
-//    QVector<QStringList> levels;
-//    levels.resize(3);
+    //    int level = 0;
+    //    QVector<QStringList> levels;
+    //    levels.resize(3);
 
 
-//    while (!que.empty())
-//    {
-//        int level_size = que.size();
-//        while (level_size--)
-//        {
-//            auto pair = que.dequeue();
-//            pair.second = true;
+    //    while (!que.empty())
+    //    {
+    //        int level_size = que.size();
+    //        while (level_size--)
+    //        {
+    //            auto pair = que.dequeue();
+    //            pair.second = true;
 
-//            int count = model->rowCount(pair.first);
-//            for (int i = 0; i < count; i++)
-//            {
-//                //-----------------------------
-//                QModelIndex ix = model->index(i, 0, pair.first);
-//                bool isValid = ix.isValid();
-//                QVariant name = model->data(ix);
+    //            int count = model->rowCount(pair.first);
+    //            for (int i = 0; i < count; i++)
+    //            {
+    //                //-----------------------------
+    //                QModelIndex ix = model->index(i, 0, pair.first);
+    //                bool isValid = ix.isValid();
+    //                QVariant name = model->data(ix);
 
-//                levels[level].append(name.toString());
-//                //-----------------------------
+    //                levels[level].append(name.toString());
+    //                //-----------------------------
 
-//                if (isValid)
-//                    que.enqueue(qMakePair(ix, false));
-//            }
-//        }
-//        level++;
-//    }
+    //                if (isValid)
+    //                    que.enqueue(qMakePair(ix, false));
+    //            }
+    //        }
+    //        level++;
+    //    }
 
-//    qDebug() << "LEVEL=" << level;
-//    qDebug() << "LEVEL=" << level;
+    //    qDebug() << "LEVEL=" << level;
+    //    qDebug() << "LEVEL=" << level;
 
-//    for (int level = 0; ; level++)
-//    {
-//        QStringList onLevel;
-//        for (int i = 0; i < model->rowCount(); i++)
-//        {
-//            onLevel.append(model->data(model->index(i, 0)).toString());
-//        }
-//        levels.append(onLevel);
+    //    for (int level = 0; ; level++)
+    //    {
+    //        QStringList onLevel;
+    //        for (int i = 0; i < model->rowCount(); i++)
+    //        {
+    //            onLevel.append(model->data(model->index(i, 0)).toString());
+    //        }
+    //        levels.append(onLevel);
 
-//    }
+    //    }
 
-        Dialog wgt(mTreeView->model(), mAltsSpin->value(), this);
-        wgt.setModal(true);
-        wgt.setWindowState(Qt::WindowMaximized);
-        wgt.exec();
+    QStringList altNames;
+    for (int i = 0; i < mAltsNameLayout->count(); i++)
+    {
+        altNames.append(qobject_cast<QLineEdit*>(mAltsNameLayout->itemAt(i)->widget())->text());
+    }
+
+    Dialog wgt(mTreeView->model(), altNames, this);
+    wgt.setModal(true);
+    wgt.setWindowState(Qt::WindowMaximized);
+    wgt.exec();
+}
+
+
+
+void MainWindow::reset()
+{
+    QAbstractItemModel* model = mTreeView->model();
+    const QModelIndex index = model->index(0, 0).parent();
+    while (model->rowCount(index) > 0)
+        model->removeRow(0, index);
+    updateActions();
+    mAltsSpin->setValue(0);
 }
 
 
 
 void MainWindow::insertRow()
 {
-    QModelIndex index = mTreeView->selectionModel()->currentIndex();
+    const QModelIndex index = mTreeView->selectionModel()->currentIndex();
     QAbstractItemModel* model = mTreeView->model();
 
     if (!model->insertRow(index.row() + 1, index.parent()))
@@ -206,9 +217,11 @@ void MainWindow::insertRow()
         model->setData(child, QVariant("[No data]"), Qt::EditRole);
     }
 
-    mTreeView->selectionModel()->
-            setCurrentIndex(model->index(index.row() + 1, 0, index.parent()),
-                            QItemSelectionModel::ClearAndSelect);
+
+    const QModelIndex curIx = model->index(index.row() + 1, 0, index.parent());
+
+    mTreeView->selectionModel()->setCurrentIndex(curIx, QItemSelectionModel::ClearAndSelect);
+    emit mTreeView->edit(curIx);
     updateActions();
 }
 
@@ -216,7 +229,7 @@ void MainWindow::insertRow()
 
 void MainWindow::insertChild()
 {
-    QModelIndex index = mTreeView->selectionModel()->currentIndex();
+    const QModelIndex index = mTreeView->selectionModel()->currentIndex();
     if (!index.isValid())
         return;
     QAbstractItemModel* model = mTreeView->model();
@@ -239,8 +252,10 @@ void MainWindow::insertChild()
                                  Qt::EditRole);
         }
     }
-    mTreeView->selectionModel()->setCurrentIndex(model->index(0, 0, index),
-                                                 QItemSelectionModel::ClearAndSelect);
+
+    const QModelIndex curIx = model->index(0, 0, index);
+    mTreeView->selectionModel()->setCurrentIndex(curIx, QItemSelectionModel::ClearAndSelect);
+    emit mTreeView->edit(curIx);
     updateActions();
 }
 
@@ -255,4 +270,3 @@ void MainWindow::removeRow()
     if (model->removeRow(index.row(), index.parent()))
         updateActions();
 }
-

@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="mCentralWidget">
-   <layout class="QVBoxLayout" name="mMainLayout" stretch="0,0,0,0,1">
+   <layout class="QVBoxLayout" name="mMainLayout" stretch="0,0,0,1">
     <property name="leftMargin">
      <number>75</number>
     </property>
@@ -32,16 +32,9 @@
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="mResetButton">
-      <property name="text">
-       <string>Сбросить</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <layout class="QFormLayout" name="formLayout">
+     <layout class="QFormLayout" name="__formLayout">
       <item row="0" column="0">
-       <widget class="QLabel" name="label2">
+       <widget class="QLabel" name="__label">
         <property name="text">
          <string>Альтернативы</string>
         </property>
@@ -57,23 +50,23 @@
      </layout>
     </item>
     <item>
-     <widget class="QWidget" name="widget" native="true">
+     <widget class="QWidget" name="mAltwidget" native="true">
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="0" rowspan="2">
-        <widget class="QScrollArea" name="scrollArea_2">
+        <widget class="QScrollArea" name="mScrollArea">
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="altsNameWidget">
+         <widget class="QWidget" name="mAltsNameWidget">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
             <width>370</width>
-            <height>105</height>
+            <height>132</height>
            </rect>
           </property>
-          <layout class="QVBoxLayout" name="mAltsNameVLayout"/>
+          <layout class="QVBoxLayout" name="mAltsNameLayout"/>
          </widget>
         </widget>
        </item>
@@ -82,7 +75,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QToolBar" name="toolbar">
+  <widget class="QToolBar" name="__toolbar">
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -139,6 +132,18 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="mResetAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/pics/arrows-reset.png</normaloff>:/pics/arrows-reset.png</iconset>
+   </property>
+   <property name="text">
+    <string>reset</string>
+   </property>
+   <property name="toolTip">
+    <string>Reset</string>
    </property>
   </action>
  </widget>

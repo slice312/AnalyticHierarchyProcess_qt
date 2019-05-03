@@ -19,7 +19,7 @@ class Dialog : public QDialog, private Ui::Dialog
 
 private:
     int levels;
-    int alternatives;
+    QStringList mAlternatives;
     QList<QList<QTableView*>> tableHierarchy;
     QList<QList<QStringList>> names;     //имена критериев и альтернатив
 
@@ -30,8 +30,8 @@ public:
     Dialog(const QStringList& list, int trueIndex, const QVector<double>& vals,
            const QVector<QVector<double>>& CR, QWidget* parent = nullptr);
 
-    Dialog(QAbstractItemModel* tree,
-           int alternatives, QWidget* parent = nullptr);
+    Dialog(QAbstractItemModel* tree, const QStringList& alternatives,
+           QWidget* parent = nullptr);
     ~Dialog();
 
     void calculate();
