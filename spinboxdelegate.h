@@ -10,12 +10,12 @@ class SpinBoxDelegate : public QItemDelegate
     Q_OBJECT
 
 private:
-    QList<QModelIndex> lockIndexes;   //заблокировання диагональ
-    mutable Matrix marked;              //для проверки заполненности
+    QList<QModelIndex> lockIndexes;     //заблокированная диагональ
     mutable Matrix mx;                  //для расчета согласованности
+    mutable Matrix marked;              //для проверки заполненности mx
 
 public:
-    SpinBoxDelegate(int rowcol, int cols, QObject* parent = nullptr);
+    SpinBoxDelegate(int rowcol, QObject* parent = nullptr);
 
     void lockIndex(const QModelIndex& index);
 

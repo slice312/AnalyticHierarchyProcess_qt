@@ -4,11 +4,10 @@
 
 
 
-SpinBoxDelegate::SpinBoxDelegate(int rows, int cols, QObject* parent) :
-    QItemDelegate(parent), marked(rows, cols), mx(rows, cols)
-{
-    qDebug() << "DELEGATE CREATED";
-}
+SpinBoxDelegate::SpinBoxDelegate(int rowcol, QObject* parent) :
+    QItemDelegate(parent),
+    marked(rowcol, rowcol), mx(rowcol, rowcol)
+{}
 
 
 void SpinBoxDelegate::lockIndex(const QModelIndex& index)
@@ -17,11 +16,14 @@ void SpinBoxDelegate::lockIndex(const QModelIndex& index)
     int row = index.row();
     int col = index.column();
 
+    mx(row, col) = 1.0;
+    mx(col, row) = 1.0;
+
     marked(row, col) = 1.0;
     marked(col, row) = 1.0;
 
-    mx(row, col) = 1.0;
-    mx(col, row) = 1.0;
+    if (mx.size1() == 1 && mx.size2() == 1)
+        emit indicate(true);
 }
 
 
@@ -72,11 +74,11 @@ void SpinBoxDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
     model->setData(index, value);
     model->setData(chainedIndex, QString::number(1.0 / value, 'f', 3));
 
-    marked(col, row) = 1.0;
-    marked(row, col) = 1.0;
-
     mx(row, col) = value;
     mx(col, row) = 1.0 / value;
+
+    marked(col, row) = 1.0;
+    marked(row, col) = 1.0;
 
 
     for (uint i = 0; i < marked.size1(); i++)

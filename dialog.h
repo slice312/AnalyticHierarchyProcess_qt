@@ -5,10 +5,15 @@
 #include <QVector>
 #include <QList>
 #include <QTableView>
+#include <QStandardItemModel>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QPair>
+
 #include "ui_dialog.h"
 #include "spinboxdelegate.h"
+#include "editableTreeView/treeitem.h"
+#include "alg_ahp.h"
 
 
 
@@ -18,10 +23,9 @@ class Dialog : public QDialog, private Ui::Dialog
     Q_OBJECT
 
 private:
-    int levels;
+    int mLevels;
     QStringList mAlternatives;
-    QList<QList<QTableView*>> tableHierarchy;
-    QList<QList<QStringList>> names;     //имена критериев и альтернатив
+    TreeNode<QTableView*>* mTree;
 
 
 
@@ -38,10 +42,13 @@ public:
 
 
 private:
-    void bfs(QAbstractItemModel* tree);
-    void dfs(QAbstractItemModel* tree);
+    void fillCriterias(QAbstractItemModel* tree);
+    void BFS();
+    void DFS();
+
     void setDefaultValues();
-    QLabel* getLabel(const QString& file, const QRect& rect,
+
+    QLabel* createIndicator(const QString& file, const QRect& rect,
                      QWidget* parent) const;
     void connectIndicator(QLabel* receiver, const SpinBoxDelegate* sender);
 };

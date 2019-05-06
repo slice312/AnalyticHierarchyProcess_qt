@@ -3,10 +3,10 @@
         <file>pics/indicator_gray.svg</file>
         <file>pics/indicator_green.svg</file>
         <file>pics/indicator_red.svg</file>
-        <file>default.txt</file>
         <file>pics/minus.png</file>
         <file>pics/network.svg</file>
         <file>pics/plus.png</file>
         <file>pics/arrows-reset.png</file>
+        <file>default.txt</file>
     </qresource>
 </RCC>

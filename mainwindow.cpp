@@ -12,21 +12,19 @@
 
 
 
-
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent)
 {
     setupUi(this);
     __toolbar->setMovable(false);
 
-
-    auto  tb = __toolbar;
     QWidget* empty = new QWidget();
     empty->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     empty->setObjectName("spacer");
-    tb->addWidget(empty);
-    tb->addAction(mResetAction);
-    tb->dumpObjectTree();
+    __toolbar->addWidget(empty);
+    __toolbar->addAction(mResetAction);
+    __toolbar->dumpObjectTree();
+
 
 
 
@@ -106,77 +104,6 @@ void MainWindow::on_mAltsSpin_valueChanged(int value)
 
 void MainWindow::on_mOkButton_clicked()
 {
-    // QList<QList<QTableView*>> tableHierarchy;
-
-    QAbstractItemModel* model = mTreeView->model();
-
-    int rows = model->rowCount();
-    //    for (int level = 0; level < model->rowCount(); level++)
-    //    {
-    //        QModelIndex index = model->index(level, 0);
-    //        index.data();
-    //        int ones = model->rowCount(index);
-    //        for (int i = 0; i < 3; ++i) {
-    //        }
-    //    }
-
-    // TODO обход дерева в ширину
-    // сначала в корню -                   это критерии первого уровня
-    // потом по всем детям, если есть -    это критерии второго уровня и т.д.
-
-    QQueue<QPair<QModelIndex, bool>> que;
-
-
-    QModelIndex index = model->index(0, 0).parent();
-    bool check = index.isValid();
-    que.enqueue(qMakePair(index, false));
-
-
-    //    int level = 0;
-    //    QVector<QStringList> levels;
-    //    levels.resize(3);
-
-
-    //    while (!que.empty())
-    //    {
-    //        int level_size = que.size();
-    //        while (level_size--)
-    //        {
-    //            auto pair = que.dequeue();
-    //            pair.second = true;
-
-    //            int count = model->rowCount(pair.first);
-    //            for (int i = 0; i < count; i++)
-    //            {
-    //                //-----------------------------
-    //                QModelIndex ix = model->index(i, 0, pair.first);
-    //                bool isValid = ix.isValid();
-    //                QVariant name = model->data(ix);
-
-    //                levels[level].append(name.toString());
-    //                //-----------------------------
-
-    //                if (isValid)
-    //                    que.enqueue(qMakePair(ix, false));
-    //            }
-    //        }
-    //        level++;
-    //    }
-
-    //    qDebug() << "LEVEL=" << level;
-    //    qDebug() << "LEVEL=" << level;
-
-    //    for (int level = 0; ; level++)
-    //    {
-    //        QStringList onLevel;
-    //        for (int i = 0; i < model->rowCount(); i++)
-    //        {
-    //            onLevel.append(model->data(model->index(i, 0)).toString());
-    //        }
-    //        levels.append(onLevel);
-
-    //    }
-
     QStringList altNames;
     for (int i = 0; i < mAltsNameLayout->count(); i++)
     {
@@ -216,7 +143,6 @@ void MainWindow::insertRow()
         QModelIndex child = model->index(index.row() + 1, column, index.parent());
         model->setData(child, QVariant("[No data]"), Qt::EditRole);
     }
-
 
     const QModelIndex curIx = model->index(index.row() + 1, 0, index.parent());
 

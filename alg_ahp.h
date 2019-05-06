@@ -4,6 +4,8 @@
 #include <vector>
 #include <initializer_list>
 #include <QDebug>
+#include <functional>
+
 
 typedef unsigned int uint;
 
@@ -16,10 +18,14 @@ std::initializer_list;
 
 class AlghorithmAHP;
 class Matrix;
+
+template<typename T>
+struct TreeNode;
 }
 
 using ahp::AlghorithmAHP;
 using ahp::Matrix;
+using ahp::TreeNode;
 
 
 
@@ -34,9 +40,11 @@ private:
     uint levels;
     uint _alternatives;
 
-    vector<vector<Matrix>> list;             // матрицы на уровне иерархии
-    vector<vector<vector<double>>> weights;  // весовые коэффициенты
-    vector<vector<double>> CR;               // коэффициенты согласованности
+
+    TreeNode<Matrix>* mTreeMatrix;
+    TreeNode<double>* mConsistencyRatio;
+    TreeNode<double>* mTreeWeights;
+
 
 
 public:
@@ -44,16 +52,39 @@ public:
 
     int alternatives() const { return _alternatives; }
 
-    vector<double> addLevel(const vector<Matrix>& mtxs);
-    double addMatrix(uint onLevel, const Matrix& mx);
 
     pair<int, vector<double>> answer();
     static double getCR(const Matrix& m);  //AHP Consistency Ratio
+    void setTree(TreeNode<Matrix>* tree);
+
+
+//    double alg(Tree* root, int alt)
+//    {
+//        //остановить не предпоследнем уровне
+//        if (root->childs[0]->childs.size() == 0)
+//            return root->childs[alt]->value;
+
+
+//        double sum = 0.0;
+//        for (int i = 0; i < root->childs.size(); i++)
+//        {
+//            sum += root->childs[i]->value * alg(root->childs[i], alt);
+//        }
+//        return sum;
+//    }
+
+
+    /*
+     * child* addChild(treenode*)
+     *
+     */
+
+
 
 
 private:
     vector<double> weightForEachAlternative();
-    double combinedWeighting(uint level, uint onlvl, uint alt);
+    double combinedWeighting(TreeNode<double>* weights, uint alt);
     static double calcConsistencyRatio(const Matrix& m, const vector<double>& weights);
 };
 
@@ -87,6 +118,42 @@ public:
     vector<double> avrRows() const;
 
     vector<double> operator*(const vector<double>& vec) const;
+};
+
+
+template<typename T>
+struct is_pointer { static const bool value = false; };
+
+template<typename T>
+struct is_pointer<T*> { static const bool value = true; };
+
+
+template<typename T>
+struct ahp::TreeNode
+{
+    T data;
+    QList<TreeNode<T>*> childs;
+
+    TreeNode(T val = T()) : data(val)
+    {}
+
+    ~TreeNode()
+    {
+        qDeleteAll(childs);
+    }
+
+//    static constexpr void print(TreeNode* node, const QString& prefix)
+//    {
+//        if (is_pointer<T>::value)
+//            qDebug() << prefix <<  node->data->objectName();
+//        else
+//            qDebug() << prefix <<  node->data.objectName();
+
+//        for (auto i : node->childs)
+//        {
+//            print(i, prefix + "   ");
+//        }
+//    }
 };
 
 

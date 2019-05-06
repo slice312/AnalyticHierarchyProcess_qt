@@ -16,59 +16,6 @@ AlghorithmAHP::AlghorithmAHP(uint alternatives)
 }
 
 
-/*!
-    \brief AlghorithmAHP::addLevel
-            Добавляет уровень иерархии с матрицами.
-            При добавлении нормализует матрицы, высчитывает весовые коэф. и
-            коэф. согласованности.
-    \return коэффициенты согласованности для каждой добавленной матрицы
-*/
-vector<double> AlghorithmAHP::addLevel(const vector<Matrix>& mtxs)
-{
-    weights.resize(levels + 1);
-    CR.resize(levels + 1);
-    vector<Matrix> matricesOnLevel;
-
-    for (uint i = 0; i < mtxs.size(); i++)
-    {
-        Matrix normalized = mtxs[i].normalize();
-        matricesOnLevel.push_back(normalized);
-
-        vector<double> avr = normalized.avrRows();
-        weights[levels].push_back(avr);
-
-        double CR = calcConsistencyRatio(mtxs[i], avr);
-        this->CR[levels].push_back(CR);
-    }
-
-    list.push_back(matricesOnLevel);
-    return CR[levels++];
-}
-
-
-
-/*!
- * \brief AlghorithmAHP::addMatrix
- * \param onLevel       уровень иерархии, отчет с 0
- * \param m             матрица сравнений
- * \return коэффициент согласованности добавленной матрицы
- */
-double AlghorithmAHP::addMatrix(uint onLevel, const Matrix& m)
-{
-    if (onLevel >= levels || onLevel < 0)
-        throw std::invalid_argument("invalid level");
-
-    Matrix normalized = m.normalize();
-    list[onLevel].push_back(normalized);
-
-    vector<double> avr = normalized.avrRows();
-    weights[onLevel].push_back(avr);
-
-    double CR = calcConsistencyRatio(m, avr);
-    this->CR[onLevel].push_back(CR);
-    return CR;
-}
-
 
 
 pair<int, vector<double>> AlghorithmAHP::answer()
@@ -99,15 +46,70 @@ double AlghorithmAHP::getCR(const Matrix& m)
 
 
 
+void AlghorithmAHP::setTree(TreeNode<Matrix>* tree)
+{
+    std::function<TreeNode<double>* (TreeNode<Matrix>*, TreeNode<double>*)> clone;
+    clone = [&clone](TreeNode<Matrix>* mxs, TreeNode<double>* weights)
+    {
+        Matrix normalized = mxs->data.normalize();
+        vector<double> avr = normalized.avrRows();
+
+
+        double CR = calcConsistencyRatio(mxs->data, avr);
+        qDebug() << CR;
+        TreeNode<double>* cr = new TreeNode(CR);
+
+        for (double num : avr)
+        {
+            weights->childs.append(new TreeNode(num));
+        }
+
+        for (int i = 0; i < mxs->childs.size(); i++)
+        {
+            cr->childs.append(clone(mxs->childs[i], weights->childs[i]));
+        }
+
+        return cr;
+    };
+
+    mTreeMatrix = tree;
+    mTreeWeights = new TreeNode(1.0);
+    mConsistencyRatio = clone(mTreeMatrix, mTreeWeights);
+
+    std::function<double (TreeNode<double>*, int)> alg;
+    alg = [&alg](TreeNode<double>* root, int alt)
+    {
+        //остановить не предпоследнем уровне
+        if (root->childs[0]->childs.size() == 0)
+            return root->childs[alt]->data;
+
+        double sum = 0.0;
+        for (int i = 0; i < root->childs.size(); i++)
+        {
+            sum += root->childs[i]->data * alg(root->childs[i], alt);
+        }
+        return sum;
+    };
+
+    double a1 = alg(mTreeWeights, 0);
+    double a2 = alg(mTreeWeights, 1);
+    double a3 = alg(mTreeWeights, 2);
+
+    Q_UNUSED(a1);
+    Q_UNUSED(a2);
+    Q_UNUSED(a3);
+    qDebug() << "_------------------";
+}
+
+
+
 //--------------------------------PRIVATE------------------------------------
 vector<double> AlghorithmAHP::weightForEachAlternative()
 {
     vector<double> result;
-
     for (uint i = 0; i < _alternatives; i++)
     {
-        double res = combinedWeighting(0, 0, i);
-        assert(res > 0.0 && "wrong weight");
+        double res = combinedWeighting(mTreeWeights, i);
         result.push_back(res);
     }
     return result;
@@ -115,25 +117,18 @@ vector<double> AlghorithmAHP::weightForEachAlternative()
 
 
 
-double AlghorithmAHP::combinedWeighting(uint lvl, uint onlvl, uint alt)
+double AlghorithmAHP::combinedWeighting(TreeNode<double>* weights, uint alt)
 {
-    if (lvl == this->levels - 1)
-        return weights[lvl][onlvl][alt];
+    //остановить не предпоследнем уровне
+    if (weights->childs[0]->childs.size() == 0)
+        return weights->childs[alt]->data;
 
-    for (uint i = lvl; i <= this->levels; i++)
+    double sum = 0.0;
+    for (uint i = 0; i < weights->childs.size(); i++)
     {
-        for (uint vecOnLevel = onlvl; vecOnLevel < list[lvl].size(); vecOnLevel++)
-        {
-            double sum = 0.0;
-            for (uint i = 0; i < weights[lvl][vecOnLevel].size(); i++)
-            {
-                sum += weights[lvl][vecOnLevel][i] *
-                        combinedWeighting(lvl + 1, vecOnLevel * 2 + i, alt);
-            }
-            return sum;
-        }
+        sum += weights->childs[i]->data * combinedWeighting(weights->childs[i], alt);
     }
-    return -1.0;
+    return sum;
 }
 
 
@@ -181,7 +176,6 @@ Matrix::Matrix(initializer_list<initializer_list<double>> list) :
         uint j = 0;
         for (auto it2 = it1->begin(); it2 != it1->end(); ++it2, ++j)
         {
-            auto num = *it2;
             (*this)(i, j) = *it2;
         }
     }
@@ -246,9 +240,9 @@ vector<double> Matrix::operator*(const vector<double>& vec) const
 
     vector<double> result(vec.size());
 
-    for (int i = 0; i < vec.size(); i++)
+    for (uint i = 0; i < vec.size(); i++)
     {
-        for (int j = 0; j < cols ; j++)
+        for (uint j = 0; j < cols ; j++)
         {
             result[i] += (*this)(i, j) * vec[j];
         }
