@@ -66,7 +66,7 @@ Dialog::Dialog(const QStringList& list, int trueIndex, const QVector<double>& va
 
 
 
-Dialog::Dialog(QAbstractItemModel* tree, const QStringList& alternatives, QWidget* parent) :
+Dialog::Dialog(const QAbstractItemModel* tree, const QStringList& alternatives, QWidget* parent) :
     QDialog(parent, Qt::Window)
 {
     setupUi(this);
@@ -100,18 +100,24 @@ Dialog::Dialog(QAbstractItemModel* tree, const QStringList& alternatives, QWidge
      * Потом обход в глубину для уровня альтернатив.
      */
     //    bfs(tree);
-    BFS();
-    DFS();
-//    mTree->print(mTree, "    ");
+    setCriteriasOnLayout();
+    setAlternativesOnLayout();
+    //    mTree->print(mTree, "    ");
     //  dfs(tree);
     //        QPushButton* calcButton = new QPushButton("Вычислить", this);
     //        __vLayout2->addWidget(calcButton, Qt::AlignCenter);
     //        //    calcButton->setMaximumWidth(300);
     connect(mCalcButton, &QPushButton::clicked, this, &Dialog::calculate);
-    setDefaultValues();
+    setDefaultValues(mTree);
 }
 
-void Dialog::BFS()
+
+/*!
+ * \brief Dialog::BFS
+ *      Проход в ширину по mTree чтобы на виджете разместить матрицы критериев,
+ *      каждую на своем уровне.
+ */
+void Dialog::setCriteriasOnLayout()
 {
     QQueue<Tree*> que;
     que.enqueue(mTree); //root
@@ -133,6 +139,7 @@ void Dialog::BFS()
             Tree* node = que.dequeue();
             for (int i = 0; i < node->childs.size(); i++)
             {
+                if (node->childs[i]->childs.isEmpty()) continue; //без матриц альтернатив
                 que.enqueue(node->childs[i]);
             }
 
@@ -170,8 +177,15 @@ void Dialog::BFS()
 
 
 
-void Dialog::DFS()
+/*!
+ * \brief Dialog::DFS
+ *   Проход в глубину по mTree чтобы на виджете разместить матрицы альтернаитв,
+ *   .
+ */
+void Dialog::setAlternativesOnLayout()
 {
+    // TODO для уровня альтернаитв поправвить шрифт сделать как в критериях
+
     QWidget* widget = new QWidget();
     QScrollArea* scroll = new QScrollArea();
     scroll->setWidgetResizable(true);
@@ -182,58 +196,49 @@ void Dialog::DFS()
 
 
 
-
     std::function<void (Tree*)> go = [&](Tree* node)
     {
-        const int count = node->childs.size();
-        if (node->childs.isEmpty())      //FIXME не создаются матрицы с альтернитивами для критериев которые не раскладываются в матрице,
-        {                                // где есть хотя бы 1 критерий который раскладывается.
-            for (int i = 0; i < node->data->model()->rowCount(); i++)
-            {
-                QTableView* table = new QTableView();
-                node->childs.append(new Tree(table));
-                QStandardItemModel* model = new QStandardItemModel(table); //TODO owner problem mb
-                int rowcol = mAlternatives.size();
-                model->setRowCount(rowcol);
-                model->setColumnCount(rowcol);
-                model->setHorizontalHeaderLabels(mAlternatives);
-                model->setVerticalHeaderLabels(mAlternatives);
-                model->setObjectName(node->data->model()->objectName() + "\n" +
-                                     node->data->model()->headerData(i, Qt::Horizontal).toString());        //TODO подумать над именем
-
-
-                table->setModel(model);
-                table->resize(200, 100);
-                table->setMinimumWidth(350);
-                table->setMinimumHeight(200);
-                table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-                table->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-                //        table->setMinimumWidth(250);  //TODO размеры
-                //        table->setMinimumHeight(r200);
-
-                SpinBoxDelegate* delegate = new SpinBoxDelegate(rowcol, table);
-                table->setItemDelegate(delegate);
-                QLabel* label = createIndicator(":/pics/indicator_gray.svg", QRect(10, 10, 25, 25), this);
-                connectIndicator(label, delegate);
-
-
-                QWidget* info = new QWidget();
-                QVBoxLayout* v = new QVBoxLayout();
-                v->setContentsMargins(0, 0, 0, info->height() * 0.25);
-
-                v->addWidget(new QLabel(model->objectName()));
-                v->addWidget(label);
-                info->setLayout(v);
-
-                hlayout->addWidget(info);
-                hlayout->addWidget(table);
-            };
-        }
-
-        for (int i = 0; i < count; i++)
+        if (node->childs.isEmpty())
         {
-            go(node->childs[i]);
+            //добавляю на лэйаут
+            QTableView* table = node->data;
+            table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+            table->setMinimumWidth(250);  //TODO размеры
+            table->setMinimumHeight(200);
+
+            SpinBoxDelegate* delegate = new SpinBoxDelegate(table->model()->rowCount(), this);
+            table->setItemDelegate(delegate);
+            QLabel* label = createIndicator(":/pics/indicator_gray.svg", QRect(10, 10, 25, 25), this);
+            connectIndicator(label, delegate);
+
+
+            QLabel* title = new QLabel(table->model()->objectName());
+            title->setMinimumHeight(50);
+
+            QFont font(title->fontInfo().family(), 8);
+            table->horizontalHeader()->setFont(font);
+            table->verticalHeader()->setFont(font);
+            font.setPointSize(7);
+            title->setFont(font);
+
+            QWidget* info = new QWidget();
+            QVBoxLayout* vbl = new QVBoxLayout();
+            vbl->setContentsMargins(0, 0, 0, info->height() * 0.25);
+            vbl->addWidget(title);
+            vbl->addWidget(label);
+            info->setLayout(vbl);
+
+            hlayout->addWidget(info);
+            hlayout->addWidget(table);
         }
+        else
+        {
+            for (Tree* next : node->childs)
+            {
+                go(next);
+            }
+        }
+
     };
 
     go(mTree);
@@ -242,30 +247,43 @@ void Dialog::DFS()
 
 /*!
  * \brief Dialog::fillCriterias
- *      поиском в глубину строит дерево mTree из моделей (GUI матрицы)
- * \param tree
+ *      Поиском в глубину строит дерево матриц mTree из модели со строками QAbstractItemModel.
+ *      Поиском в глубину я не могу выстроить матрицы на виджете по уровням, потому что мне неизвестна
+ *          изначальна высота дерева, а чтобы узнать нужно пройти его полностью
+ *      Поиском в ширину я не могу построить дерево, потому что неизвестно чей child в очереди.
+ *
+ *      Поэтому сначала строю иерархию матриц.
  */
-void Dialog::fillCriterias(QAbstractItemModel* tree)
+void Dialog::fillCriterias(const QAbstractItemModel* tree)
 {
-    std::function<Tree* (QModelIndex, QString)> getNewNode;
-    getNewNode = [&](QModelIndex index, QString name)
+    std::function<QStringList (const QModelIndex&)> header;
+    std::function<Tree* (const QStringList&, const QString&)> getNewNode;
+    std::function<Tree* (const QModelIndex&, QString)> create;
+
+
+    header = [tree](const QModelIndex& index)
     {
-        QStringList headers;
+        QStringList names;
         for (int i = 0; i < tree->rowCount(index); i++)
         {
             QModelIndex ix = tree->index(i, 0, index);
-            headers.append(tree->data(ix).toString());
+            names.append(tree->data(ix).toString());
         }
+        return names;
+    };
 
+
+    getNewNode = [&](const QStringList& header, const QString& name)//TODO захват контекста пересмотреть и права владения tableview (их можно установить во время поемещения на layout)
+    {
         QTableView* table = new QTableView(this);
         QStandardItemModel* model = new QStandardItemModel(table); //TODO owner problem mb
         //Матрицы всегда квадратные
-        int rowcol = headers.size();
+        int rowcol = header.size();
         model->setRowCount(rowcol);
         model->setColumnCount(rowcol);
 
-        model->setHorizontalHeaderLabels(headers);
-        model->setVerticalHeaderLabels(headers);
+        model->setHorizontalHeaderLabels(header);
+        model->setVerticalHeaderLabels(header);
         model->setObjectName(name);
         table->setModel(model);
         table->setObjectName("tv_" + name);
@@ -273,23 +291,28 @@ void Dialog::fillCriterias(QAbstractItemModel* tree)
     };
 
 
-    std::function<Tree* (QModelIndex, QString)> clone;
-    clone = [&](QModelIndex index, QString name)
+    create = [&](const QModelIndex& index, QString name)
     {
         name += "\n" + tree->data(index).toString();
-        Tree* newNode = getNewNode(index, name);
+        const int count = tree->rowCount(index);
 
-        for (int i = 0; i < tree->rowCount(index); i++)
+        if (count == 0)
+        {
+            //Матрица с альтернативами
+            return getNewNode(mAlternatives, name);
+        }
+
+        Tree* newNode = getNewNode(header(index), name);
+
+        for (int i = 0; i < count; i++)
         {
             QModelIndex ix = tree->index(i, 0, index);
-            if (tree->rowCount(ix) == 0) continue;
-            newNode->childs.append(clone(ix, name));
+            newNode->childs.append(create(ix, name));
         }
         return newNode;
     };
 
-
-    mTree = clone(tree->index(0, 0).parent(), "");
+    mTree = create(tree->index(0, 0).parent(), "");
 }
 
 
@@ -355,46 +378,41 @@ void Dialog::calculate()
     wgt.exec();
     qDebug() << "предупреждаю удалю";
     delete tree;
+    qDebug() << "предупреждаю удалил";
 }
 
 
 
 
-void Dialog::setDefaultValues()
+void Dialog::setDefaultValues(TreeNode<QTableView*>* node)
 {
-    std::function<void (Tree*)> set = [&](Tree* node)
+    QTableView* table = node->data;
+    SpinBoxDelegate* delegate = qobject_cast<SpinBoxDelegate*>(table->itemDelegate());
+    QAbstractItemModel* model = table->model();
+
+    for (int row = 0; row < model->rowCount(); row++)
     {
-        QTableView* table = node->data;
-        SpinBoxDelegate* delegate = qobject_cast<SpinBoxDelegate*>(table->itemDelegate());
-        QAbstractItemModel* model = table->model();
+        QModelIndex index = model->index(row, row);
+        model->setData(index, 1);
+        delegate->lockIndex(index);
+        table->horizontalHeader()->resizeSection(row, 60); //TODO размеры
+        table->verticalHeader()->resizeSection(row, 25);
+    }
 
-        for (int row = 0; row < model->rowCount(); row++)
-        {
-            QModelIndex index = model->index(row, row);
-            model->setData(index, 1);
-            delegate->lockIndex(index);
-            table->horizontalHeader()->resizeSection(row, 60); //TODO размеры
-            table->verticalHeader()->resizeSection(row, 25);
-        }
-
-        for (int i = 0; i < node->childs.size(); i++)
-        {
-            set(node->childs[i]);
-        }
-    };
-    set(mTree);
+    for (int i = 0; i < node->childs.size(); i++)
+    {
+        setDefaultValues(node->childs[i]);
+    }
 }
 
 
 
-QLabel* Dialog::createIndicator(const QString& file, const QRect& rect,
-                                QWidget* parent) const
+QLabel* Dialog::createIndicator(const QString& file, const QRect& rect, QWidget* parent) const
 {
     QLabel* label = new QLabel(parent);
     label->setGeometry(rect);
     label->setFixedSize(rect.size());
     label->setAlignment(Qt::AlignCenter);
-
     QPixmap pix = QIcon(file).pixmap(label->size());
     label->setPixmap(pix);
     return label;

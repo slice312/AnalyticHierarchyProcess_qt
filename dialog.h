@@ -34,7 +34,7 @@ public:
     Dialog(const QStringList& list, int trueIndex, const QVector<double>& vals,
            const QVector<QVector<double>>& CR, QWidget* parent = nullptr);
 
-    Dialog(QAbstractItemModel* tree, const QStringList& alternatives,
+    Dialog(const QAbstractItemModel* tree, const QStringList& alternatives,
            QWidget* parent = nullptr);
     ~Dialog();
 
@@ -42,14 +42,13 @@ public:
 
 
 private:
-    void fillCriterias(QAbstractItemModel* tree);
-    void BFS();
-    void DFS();
+    void fillCriterias(const QAbstractItemModel* tree);
+    void setCriteriasOnLayout();
+    void setAlternativesOnLayout();
 
-    void setDefaultValues();
+    void setDefaultValues(TreeNode<QTableView*>* node);
 
-    QLabel* createIndicator(const QString& file, const QRect& rect,
-                     QWidget* parent) const;
+    QLabel* createIndicator(const QString& file, const QRect& rect, QWidget* parent) const;
     void connectIndicator(QLabel* receiver, const SpinBoxDelegate* sender);
 };
 
