@@ -22,7 +22,7 @@ void SpinBoxDelegate::lockIndex(const QModelIndex& index)
     marked(row, col) = 1.0;
     marked(col, row) = 1.0;
 
-    if (mx.size1() == 1 && mx.size2() == 1)
+    if (mx.rows() == 1 && mx.cols() == 1)
         emit indicate(true);
 }
 
@@ -81,9 +81,9 @@ void SpinBoxDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
     marked(row, col) = 1.0;
 
 
-    for (uint i = 0; i < marked.size1(); i++)
+    for (uint i = 0; i < marked.rows(); i++)
     {
-        for (uint j = 0; j < marked.size2(); j++)
+        for (uint j = 0; j < marked.cols(); j++)
         {
             if (marked(i, j) == 0.0)
             {

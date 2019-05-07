@@ -5,7 +5,6 @@
 #include <QQueue>
 
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include "dialog.h"
 #include "editableTreeView/treemodel.h"
 
@@ -37,7 +36,7 @@ MainWindow::MainWindow(QWidget* parent) :
     mTreeView->setAnimated(true);
     mTreeView->setAllColumnsShowFocus(true);
 
-    QFile file(":/default.txt");
+    QFile file(":res/default.txt");
     file.open(QIODevice::ReadOnly);
     TreeModel* model = new TreeModel({"Критерии"}, file.readAll(), mTreeView);
     file.close();

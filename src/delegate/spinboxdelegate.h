@@ -2,7 +2,7 @@
 #define SPINBOX_DELEGATE_H_INCLUDED
 
 #include <QItemDelegate>
-#include "alg_ahp.h"
+#include "src/compute/ahp.h"
 
 
 class SpinBoxDelegate : public QItemDelegate

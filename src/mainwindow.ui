@@ -91,8 +91,8 @@
   </widget>
   <action name="mInsertRowAction">
    <property name="icon">
-    <iconset resource="res.qrc">
-     <normaloff>:/pics/minus.png</normaloff>:/pics/minus.png</iconset>
+    <iconset resource="../res.qrc">
+     <normaloff>:/res/pics/minus.png</normaloff>:/res/pics/minus.png</iconset>
    </property>
    <property name="text">
     <string>insertRow</string>
@@ -106,8 +106,8 @@
   </action>
   <action name="mRemoveRowAction">
    <property name="icon">
-    <iconset resource="res.qrc">
-     <normaloff>:/pics/plus.png</normaloff>:/pics/plus.png</iconset>
+    <iconset resource="../res.qrc">
+     <normaloff>:/res/pics/plus.png</normaloff>:/res/pics/plus.png</iconset>
    </property>
    <property name="text">
     <string>removeRow</string>
@@ -121,8 +121,8 @@
   </action>
   <action name="mInsertChildAction">
    <property name="icon">
-    <iconset resource="res.qrc">
-     <normaloff>:/pics/network.svg</normaloff>:/pics/network.svg</iconset>
+    <iconset resource="../res.qrc">
+     <normaloff>:/res/pics/network.svg</normaloff>:/res/pics/network.svg</iconset>
    </property>
    <property name="text">
     <string>insertChild</string>
@@ -136,8 +136,8 @@
   </action>
   <action name="mResetAction">
    <property name="icon">
-    <iconset resource="res.qrc">
-     <normaloff>:/pics/arrows-reset.png</normaloff>:/pics/arrows-reset.png</iconset>
+    <iconset resource="../res.qrc">
+     <normaloff>:/res/pics/arrows-reset.png</normaloff>:/res/pics/arrows-reset.png</iconset>
    </property>
    <property name="text">
     <string>reset</string>
@@ -149,7 +149,7 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="res.qrc"/>
+  <include location="../res.qrc"/>
  </resources>
  <connections/>
 </ui>

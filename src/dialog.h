@@ -11,9 +11,8 @@
 #include <QPair>
 
 #include "ui_dialog.h"
-#include "spinboxdelegate.h"
-#include "editableTreeView/treeitem.h"
-#include "alg_ahp.h"
+#include "delegate/spinboxdelegate.h"
+#include "compute/ahp.h"
 
 
 
@@ -28,8 +27,6 @@ private:
     TreeNode<QTableView*>* mTree;
 
 
-
-
 public:
     Dialog(const QStringList& list, int trueIndex, const QVector<double>& vals,
            const QVector<QVector<double>>& CR, QWidget* parent = nullptr);
@@ -38,18 +35,23 @@ public:
            QWidget* parent = nullptr);
     ~Dialog();
 
-    void calculate();
 
 
 private:
-    void fillCriterias(const QAbstractItemModel* tree);
+    void buildTree(const QAbstractItemModel* tree);
     void setCriteriasOnLayout();
     void setAlternativesOnLayout();
+
+    void putsOnLayout(QLayout* layout, QTableView* table);
 
     void setDefaultValues(TreeNode<QTableView*>* node);
 
     QLabel* createIndicator(const QString& file, const QRect& rect, QWidget* parent) const;
     void connectIndicator(QLabel* receiver, const SpinBoxDelegate* sender);
+
+
+private slots:
+    void calculate();
 };
 
 

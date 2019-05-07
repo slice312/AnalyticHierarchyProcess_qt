@@ -41,7 +41,7 @@
          <property name="geometry">
           <rect>
            <x>0</x>
-           <y>-13</y>
+           <y>0</y>
            <width>544</width>
            <height>500</height>
           </rect>
@@ -81,7 +81,7 @@
       <bool>true</bool>
      </property>
      <property name="text">
-      <string>PushButton</string>
+      <string>Вычислить</string>
      </property>
     </widget>
    </item>
