@@ -8,5 +8,6 @@
         <file>res/pics/plus.png</file>
         <file>res/pics/arrows-reset.png</file>
         <file>res/default.txt</file>
+        <file>res/sample.txt</file>
     </qresource>
 </RCC>

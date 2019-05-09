@@ -1,11 +1,12 @@
 #-------------------------------------------------
 #
+# AnalyticHierarchyProcess
+#
 # Project created by QtCreator 2019-03-27T13:56:17
 #
 #-------------------------------------------------
 
 QT += core gui widgets
-
 
 
 TARGET = ahp
@@ -38,7 +39,6 @@ FORMS += \
         src/dialog.ui \
         src/mainwindow.ui
 
+
 RESOURCES += \
         res.qrc
-
-

@@ -1,6 +1,6 @@
-Martin					none
-    Reputation				none
-    Location				none
-Jane					none
-    Reputation				none
-    Location				none
+Martin
+    Reputation
+    Location
+Jane
+    Reputation
+    Location
