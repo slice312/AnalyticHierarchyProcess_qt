@@ -1,5 +1,6 @@
 #include <QDoubleSpinBox>
 #include <QDebug>
+
 #include "spinboxdelegate.h"
 
 
@@ -8,6 +9,7 @@ SpinBoxDelegate::SpinBoxDelegate(int rowcol, QObject* parent) :
     QItemDelegate(parent),
     marked(rowcol, rowcol), mx(rowcol, rowcol)
 {}
+
 
 
 void SpinBoxDelegate::lockIndex(const QModelIndex& index)
@@ -23,7 +25,7 @@ void SpinBoxDelegate::lockIndex(const QModelIndex& index)
     marked(col, row) = 1.0;
 
     if (mx.rows() == 1 && mx.cols() == 1)
-        emit indicate(true);
+        emit indicate(0.0);
 }
 
 
@@ -33,8 +35,8 @@ QWidget* SpinBoxDelegate::createEditor(QWidget* parent, const QStyleOptionViewIt
 {
     qDebug() << __func__;
     QDoubleSpinBox* doubleSpinBox = new QDoubleSpinBox(parent);
-    doubleSpinBox->setMinimum(-1000.0001);
-    doubleSpinBox->setMaximum(+1000.0001);
+    doubleSpinBox->setMinimum(0.0);
+    doubleSpinBox->setMaximum(99.0);
     doubleSpinBox->setSingleStep(0.5);
     doubleSpinBox->setDecimals(3);
 
@@ -55,9 +57,14 @@ void SpinBoxDelegate::setEditorData(QWidget* editor, const QModelIndex& index) c
 {
     qDebug() << __func__;
     QDoubleSpinBox* doubleSpinBox = qobject_cast<QDoubleSpinBox*>(editor);
-    doubleSpinBox->setValue(1.00);
-}
+    int row = index.row();
+    int col = index.column();
 
+    if (marked(row, col) > 0.0)
+        doubleSpinBox->setValue(mx(row, col));
+    else
+        doubleSpinBox->setValue(1.0);
+}
 
 
 
@@ -93,16 +100,9 @@ void SpinBoxDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
         }
     }
 
-
-    qDebug() << "SpinBoxDelegate EMIT indicate";
-
     //Если матрица заполнена.
-    //Проверка индекса (CR) согласованности.
-    double indexCR = AlghorithmAHP::getCR(mx);
-    if (indexCR > 0.1)
-        emit indicate(false);
-    else
-        emit indicate(true);
+    qDebug() << "SpinBoxDelegate EMIT indicate" << endl;
+    emit indicate(AlghorithmAHP::getCR(mx));
 }
 
 

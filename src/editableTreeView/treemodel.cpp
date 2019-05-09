@@ -29,7 +29,7 @@ TreeModel::TreeModel(const QStringList& headers, const QString& data, QObject* p
 
 TreeModel::~TreeModel()
 {
-    qDebug() << "deleted TreeModel";
+    //    qDebug() << "deleted TreeModel";
     delete mRootItem;
 }
 

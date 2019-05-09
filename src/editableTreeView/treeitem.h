@@ -17,7 +17,7 @@ private:
 
 public:
     explicit TreeItem(const QVector<QVariant>& data, TreeItem* parent = nullptr);
-     ~TreeItem();
+    ~TreeItem();
 
     void appendChild(TreeItem* child);
 

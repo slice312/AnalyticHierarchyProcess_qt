@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Метод иерархий</string>
   </property>
   <widget class="QWidget" name="mCentralWidget">
    <layout class="QVBoxLayout" name="mMainLayout" stretch="20,0,0,15">
@@ -26,6 +26,15 @@
     </item>
     <item>
      <widget class="QPushButton" name="mOkButton">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+        <horstretch>2</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
       <property name="text">
        <string>ОК</string>
       </property>
@@ -42,6 +51,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QSpinBox" name="mAltsSpin">
+        <property name="maximum">
+         <number>50</number>
+        </property>
         <property name="value">
          <number>0</number>
         </property>

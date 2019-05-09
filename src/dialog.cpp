@@ -1,65 +1,17 @@
-#include <QTextEdit>
+#include <QMessageBox>
 #include <QStandardItemModel>
 #include <QPushButton>
 #include <QHeaderView>
-#include <QDebug>
 #include <QQueue>
+#include <QDebug>
 
 #include <functional>
 
 #include "dialog.h"
 
 
+
 typedef TreeNode<QTableView*> Tree;
-
-
-
-Dialog::Dialog(const QStringList& list, int trueIndex, const QVector<double>& vals,
-               const QVector<QVector<double>>& CR, QWidget* parent) :
-    QDialog(parent)
-{
-    QVBoxLayout* _lay = new QVBoxLayout(this);
-    QScrollArea* scrollArea = new QScrollArea(this);
-    QWidget* scrollAreaWidget = new QWidget();
-    scrollArea->setWidgetResizable(true);
-    scrollArea->setWidget(scrollAreaWidget);
-    _lay->addWidget(scrollArea);
-    _lay->setAlignment(Qt::AlignCenter);
-    this->setMinimumSize(680, 450);
-
-    QVBoxLayout* mainLayout = new QVBoxLayout(scrollAreaWidget);
-    mainLayout->setAlignment(Qt::AlignCenter);
-    mainLayout->setMargin(20);
-    scrollAreaWidget->setLayout(mainLayout);
-
-
-    QTextEdit* text = new QTextEdit("\n");
-    text->setReadOnly(true);
-
-    text->append("Комбинированные весовые коэффициенты");
-    for (int i = 0; i < vals.size(); i++)
-    {
-        text->append(list[i] + "\t" + QString::number(vals[i]));
-    }
-
-    if (trueIndex >= 0)
-    {
-        text->append("Лучший вариант: \"" + list[trueIndex] + "\" \t" +
-                     QString::number(vals[trueIndex]));
-    }
-    mainLayout->addWidget(text);
-
-
-    text->append("\n\n\nКоэффициенты согласованности (CR) для каждой матрицы");
-    int count = 1;
-    for (int i = 0; i < CR.size(); i++)
-    {
-        for (int j = 0; j < CR[i].size(); j++)
-        {
-            text->append(QVariant(count++).toString() + ") " + QVariant(CR[i][j]).toString());
-        }
-    }
-}
 
 
 
@@ -68,6 +20,7 @@ Dialog::Dialog(const QAbstractItemModel* tree, const QStringList& alternatives, 
 {
     setupUi(this);
     this->mAlternatives = alternatives;
+    setWindowTitle("Матрицы парных сравнений");
 
     buildTree(tree);
     setCriteriasOnLayout();
@@ -83,6 +36,7 @@ Dialog::Dialog(const QAbstractItemModel* tree, const QStringList& alternatives, 
 Dialog::~Dialog()
 {
     //    dumpObjectTree();
+    delete mTree;
 }
 
 
@@ -103,17 +57,17 @@ void Dialog::buildTree(const QAbstractItemModel* tree)
         QStringList names;
         for (int i = 0; i < tree->rowCount(index); i++)
         {
-            QModelIndex ix = tree->index(i, 0, index);
+            const QModelIndex ix = tree->index(i, 0, index);
             names.append(tree->data(ix).toString());
         }
         return names;
     };
 
 
-    getNewNode = [&](const QStringList& header, const QString& name)//TODO захват контекста пересмотреть и права владения tableview (их можно установить во время поемещения на layout)
+    getNewNode = [](const QStringList& header, const QString& name)
     {
-        QTableView* table = new QTableView(this);
-        QStandardItemModel* model = new QStandardItemModel(table); //TODO owner problem mb
+        QTableView* table = new QTableView();
+        QStandardItemModel* model = new QStandardItemModel(table);
         //Матрицы всегда квадратные
         int rowcol = header.size();
         model->setRowCount(rowcol);
@@ -143,7 +97,7 @@ void Dialog::buildTree(const QAbstractItemModel* tree)
 
         for (int i = 0; i < count; i++)
         {
-            QModelIndex ix = tree->index(i, 0, index);
+            const QModelIndex ix = tree->index(i, 0, index);
             newNode->childs.append(create(ix, name));
         }
         return newNode;
@@ -229,14 +183,25 @@ void Dialog::putsOnLayout(QLayout* layout, QTableView* table)
 {
     table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     table->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-    table->setMinimumWidth(400);  //TODO размеры TableView
+    table->setMinimumWidth(400);
     table->setMinimumHeight(100);
 
-
     SpinBoxDelegate* delegate = new SpinBoxDelegate(table->model()->rowCount(), this);
+
     table->setItemDelegate(delegate);
-    QLabel* label = createIndicator(":res/pics/indicator_gray.svg", QRect(10, 10, 25, 25), this);
-    connectIndicator(label, delegate);
+    QLabel* led = createIndicator(":res/pics/indicator_gray.svg", QRect(10, 10, 25, 25), this);
+    QLabel* indexCR = new QLabel("-");
+
+
+    connect(delegate, &SpinBoxDelegate::indicate, [led, indexCR](double val)
+    {
+        indexCR->setText(QString::number(val,'g', 5));
+        if (val > 0.1)
+            led->setPixmap(QIcon(":res/pics/indicator_red.svg").pixmap(led->size()));
+        else
+            led->setPixmap(QIcon(":res/pics/indicator_green.svg").pixmap(led->size()));
+    });
+
 
     QLabel* title = new QLabel(table->model()->objectName());
     title->setMinimumHeight(50);
@@ -251,7 +216,8 @@ void Dialog::putsOnLayout(QLayout* layout, QTableView* table)
     QVBoxLayout* vbl = new QVBoxLayout();
     vbl->setContentsMargins(0, 0, 0, info->height() * 0.25);
     vbl->addWidget(title);
-    vbl->addWidget(label);
+    vbl->addWidget(led);
+    vbl->addWidget(indexCR);
     info->setLayout(vbl);
 
     layout->addWidget(info);
@@ -268,7 +234,7 @@ void Dialog::setDefaultValues(TreeNode<QTableView*>* node)
 
     for (int row = 0; row < model->rowCount(); row++)
     {
-        QModelIndex index = model->index(row, row);
+        const QModelIndex index = model->index(row, row);
         model->setData(index, 1);
         delegate->lockIndex(index);
         table->horizontalHeader()->resizeSection(row, 70); //TODO размеры хедеров
@@ -294,25 +260,12 @@ QLabel* Dialog::createIndicator(const QString& file, const QRect& rect, QWidget*
 
 
 
-void Dialog::connectIndicator(QLabel* receiver, const SpinBoxDelegate* sender)
-{
-    connect(sender, &SpinBoxDelegate::indicate, [receiver](bool state)
-    {
-        if (state == true)
-            receiver->setPixmap(QIcon(":res/pics/indicator_green.svg").pixmap(receiver->size()));
-        else
-            receiver->setPixmap(QIcon(":res/pics/indicator_red.svg").pixmap(receiver->size()));
-    });
-}
-
-
-
 void Dialog::calculate()
 {
     qDebug() << "clicked CALCULATE";
 
     std::function<TreeNode<Matrix>* (Tree*)> fill;
-    fill = [&](Tree* node)
+    fill = [&fill](Tree* node)
     {
         QTableView* table = node->data;
         QAbstractItemModel* model = table->model();
@@ -325,7 +278,7 @@ void Dialog::calculate()
         {
             for (int col = 0; col < cols; col++)
             {
-                QModelIndex index = model->index(row, col);
+                const QModelIndex index = model->index(row, col);
                 mx(row, col) = model->data(index).toDouble();
             }
         }
@@ -342,18 +295,16 @@ void Dialog::calculate()
     TreeNode<Matrix>* tree = fill(mTree);
     AlghorithmAHP ahp(tree, mAlternatives.size());
 
-    auto pair = ahp.answer();
+    QPair<int, QVector<double>> pair = ahp.answer();
 
-    Dialog wgt(mAlternatives, pair.first, pair.second, {{2,2,23,5}}, this);
+    QString text;
+    text.append("Комбинированные весовые коэффициенты\n");
+    for (int i = 0; i < mAlternatives.size(); i++)
+        text.append(mAlternatives[i] + "\t" + QString::number(pair.second[i]) + "\n");
 
+    text.append("\nЛучший вариант: \"" + mAlternatives[pair.first] + "\" \t" +
+            QString::number(pair.second[pair.first]));
 
-
-
-    wgt.setModal(true);
-    wgt.setWindowTitle("Ответ");
-    wgt.setMinimumSize(300, 250);
-    wgt.exec();
-    qDebug() << "предупреждаю удалю";
+    QMessageBox::information(this, "Ответ", text, QMessageBox::Ok);
     delete tree;
-    qDebug() << "предупреждаю удалил";
 }

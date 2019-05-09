@@ -13,7 +13,7 @@ TreeItem::TreeItem(const QVector<QVariant>& data, TreeItem* parent)
 
 TreeItem::~TreeItem()
 {
-    qDebug() << "deleted TreeItem, " << mItemData;
+    //    qDebug() << "deleted TreeItem, " << mItemData;
     qDeleteAll(mChildItems);
 }
 
@@ -28,8 +28,8 @@ void TreeItem::appendChild(TreeItem* child)
 
 TreeItem* TreeItem::child(int row) const
 {
-    //тут не оператор[],потому что value возвращает значение по умолчанию
-    //для типа, если элемента нет.
+    //тут не оператор[],потому что value возвращает значение по умолчанию,
+    //если элемента нет.
     return mChildItems.value(row);
 }
 

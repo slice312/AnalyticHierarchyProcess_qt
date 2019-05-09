@@ -1,13 +1,9 @@
-#include <QProcess>
-#include <QDebug>
+#include <QLineEdit>
 #include <QFile>
-#include <QPair>
-#include <QQueue>
 
 #include "mainwindow.h"
 #include "dialog.h"
 #include "editableTreeView/treemodel.h"
-
 
 
 
@@ -17,16 +13,10 @@ MainWindow::MainWindow(QWidget* parent) :
     setupUi(this);
     __toolbar->setMovable(false);
 
-    QWidget* empty = new QWidget();
+    QWidget* empty = new QWidget(__toolbar);
     empty->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    empty->setObjectName("spacer");
     __toolbar->addWidget(empty);
     __toolbar->addAction(mResetAction);
-    __toolbar->dumpObjectTree();
-
-
-
-
     resize(600, 500);
 
     mTreeView->setAlternatingRowColors(true);
@@ -40,12 +30,7 @@ MainWindow::MainWindow(QWidget* parent) :
     file.open(QIODevice::ReadOnly);
     TreeModel* model = new TreeModel({"Критерии"}, file.readAll(), mTreeView);
     file.close();
-    model->setObjectName("MY_MODEL");
-
-    mTreeView->setObjectName("MY_TREE_VIEW");
     mTreeView->setModel(model);
-
-
 
 
     connect(mTreeView->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -71,10 +56,6 @@ void MainWindow::updateActions()
     bool hasCurrent = mTreeView->selectionModel()->currentIndex().isValid();
     mRemoveRowAction->setEnabled(hasCurrent);
     mInsertChildAction->setEnabled(hasCurrent);
-
-    //Отменяет редактирование model item'а
-    //    if (hasCurrent)
-    //        mTreeView->closePersistentEditor(mTreeView->selectionModel()->currentIndex());
 }
 
 
@@ -139,7 +120,7 @@ void MainWindow::insertRow()
 
     for (int column = 0; column < model->columnCount(index.parent()); column++)
     {
-        QModelIndex child = model->index(index.row() + 1, column, index.parent());
+        const QModelIndex child = model->index(index.row() + 1, column, index.parent());
         model->setData(child, QVariant("[No data]"), Qt::EditRole);
     }
 
@@ -169,7 +150,7 @@ void MainWindow::insertChild()
 
     for (int column = 0; column < model->columnCount(index); column++)
     {
-        QModelIndex child = model->index(0, column, index);
+        const QModelIndex child = model->index(0, column, index);
         model->setData(child, QVariant("[No data]"), Qt::EditRole);
         if (!model->headerData(column, Qt::Horizontal).isValid())
         {
@@ -188,7 +169,7 @@ void MainWindow::insertChild()
 
 void MainWindow::removeRow()
 {
-    QModelIndex index = mTreeView->selectionModel()->currentIndex();
+    const QModelIndex index = mTreeView->selectionModel()->currentIndex();
     if (!index.isValid())
         return;
     QAbstractItemModel* model = mTreeView->model();

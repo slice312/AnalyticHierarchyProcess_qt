@@ -1,10 +1,8 @@
 #include <stdexcept>
 #include <cmath>
 #include <functional>
-#include <QDebug>
+
 #include "ahp.h"
-
-
 
 
 
@@ -45,6 +43,15 @@ AlghorithmAHP::~AlghorithmAHP()
 
 
 
+double AlghorithmAHP::getCR(const Matrix& m)
+{
+    Matrix normalized = m.normalize();
+    QVector<double> avr = normalized.avrRows();
+    return calcConsistencyRatio(m, avr);
+}
+
+
+
 QPair<uint, QVector<double>> AlghorithmAHP::answer()
 {
     QVector<double> result = weightForEachAlternative();
@@ -65,18 +72,6 @@ QPair<uint, QVector<double>> AlghorithmAHP::answer()
 
 
 
-double AlghorithmAHP::getCR(const Matrix& m)
-{
-    Matrix normalized = m.normalize();
-    QVector<double> avr = normalized.avrRows();
-    return calcConsistencyRatio(m, avr);
-}
-
-
-
-
-
-//--------------------------------PRIVATE------------------------------------
 QVector<double> AlghorithmAHP::weightForEachAlternative()
 {
     QVector<double> result;

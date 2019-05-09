@@ -2,7 +2,9 @@
 #define SPINBOX_DELEGATE_H_INCLUDED
 
 #include <QItemDelegate>
+
 #include "src/compute/ahp.h"
+
 
 
 class SpinBoxDelegate : public QItemDelegate
@@ -33,10 +35,8 @@ protected:
                               const QModelIndex& index) const override;
 
 signals:
-    void indicate(bool state) const;
+    void indicate(double state) const;
 };
-
-
 
 
 #endif // SPINBOX_DELEGATE_H_INCLUDED

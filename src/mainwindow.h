@@ -2,9 +2,6 @@
 #define MAIN_WINDOW_H_INCLUDED
 
 #include <QMainWindow>
-#include <QSpinBox>
-#include <QLineEdit>
-#include <QStringList>
 #include "ui_mainwindow.h"
 
 

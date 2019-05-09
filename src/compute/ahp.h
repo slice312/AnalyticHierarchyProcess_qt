@@ -1,11 +1,10 @@
-#ifndef HIERARCHY_ALGORITHM_H_INCLUDED
-#define HIERARCHY_ALGORITHM_H_INCLUDED
+#ifndef AHP_ALGORITHM_H_INCLUDED
+#define AHP_ALGORITHM_H_INCLUDED
 
 #include <QVector>
+#include <QDataStream>
+
 #include <initializer_list>
-
-
-class Matrix;
 
 
 
@@ -22,16 +21,40 @@ struct TreeNode
     {
         qDeleteAll(childs);
     }
+
+    TreeNode(const TreeNode<T>&) = delete;
+    TreeNode& operator=(const TreeNode<T>&) = delete;
+
+    friend QDataStream& operator<<(QDataStream& out, const TreeNode<T>& obj)
+    {
+        out << obj.data << obj.childs.size();
+
+        for (auto ptr : obj.childs)
+            operator<<(out, *ptr);
+        return out;
+    }
+
+
+    friend QDataStream& operator>>(QDataStream& in, TreeNode<T>& obj)
+    {
+        int count;
+        in >> obj.data >> count;
+
+        for (int i = 0; i < count; ++i)
+        {
+            TreeNode<T>* node = new TreeNode<T>();
+            operator>>(in, *node);
+            obj.childs.append(node);
+        }
+        return in;
+    }
 };
 
 
 
+class Matrix;
 
-/*!
-  \class ahp::AlghorithmAHP
-  \brief Метод анализа иерархий
-  \property levels               кол-во уровней иерархии отчет с 0
-*/
+
 class AlghorithmAHP
 {
 private:
@@ -89,7 +112,4 @@ public:
     QVector<double> operator*(const QVector<double>& vec) const;
 };
 
-
-
-
-#endif // HIERARCHY_ALGORITHM_H_INCLUDED
+#endif // AHP_ALGORITHM_H_INCLUDED

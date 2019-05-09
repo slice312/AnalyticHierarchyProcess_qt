@@ -3,17 +3,12 @@
 
 #include <QDialog>
 #include <QVector>
-#include <QList>
 #include <QTableView>
-#include <QStandardItemModel>
-#include <QVBoxLayout>
 #include <QLabel>
-#include <QPair>
 
 #include "ui_dialog.h"
 #include "delegate/spinboxdelegate.h"
 #include "compute/ahp.h"
-
 
 
 
@@ -28,14 +23,10 @@ private:
 
 
 public:
-    Dialog(const QStringList& list, int trueIndex, const QVector<double>& vals,
-           const QVector<QVector<double>>& CR, QWidget* parent = nullptr);
-
     Dialog(const QAbstractItemModel* tree, const QStringList& alternatives,
            QWidget* parent = nullptr);
+
     ~Dialog();
-
-
 
 private:
     void buildTree(const QAbstractItemModel* tree);
@@ -47,7 +38,6 @@ private:
     void setDefaultValues(TreeNode<QTableView*>* node);
 
     QLabel* createIndicator(const QString& file, const QRect& rect, QWidget* parent) const;
-    void connectIndicator(QLabel* receiver, const SpinBoxDelegate* sender);
 
 
 private slots:
