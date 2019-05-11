@@ -42,7 +42,7 @@ set(FORMS
 set(RESOURCES
         res.qrc)
 
-add_executable(AHP ${SOURCES} ${HEADERS} ${FORMS} ${RESOURCES})
+add_executable(AHP ${SOURCES} ${HEADERS} ${FORMS} ${RESOURCES} res/myapp.rc)
 
 target_link_libraries(AHP Qt5::Core)
 target_link_libraries(AHP Qt5::Gui)

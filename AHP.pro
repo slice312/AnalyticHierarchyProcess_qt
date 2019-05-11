@@ -42,3 +42,6 @@ FORMS += \
 
 RESOURCES += \
         res.qrc
+
+RC_FILE = res/myapp.rc
+win32:RC_ICONS = $$PWD/res/graph.ico
