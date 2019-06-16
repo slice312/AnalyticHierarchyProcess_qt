@@ -55,7 +55,7 @@ struct TreeNode
 class Matrix;
 
 
-class AlghorithmAHP
+class AlgorithmAHP
 {
 private:
     uint _alternatives;
@@ -64,8 +64,8 @@ private:
 
 
 public:
-    AlghorithmAHP(const TreeNode<Matrix>* tree, uint alternatives);
-    ~AlghorithmAHP();
+    AlgorithmAHP(const TreeNode<Matrix>* tree, uint alternatives);
+    ~AlgorithmAHP();
 
     uint alternatives() const { return _alternatives; }
 

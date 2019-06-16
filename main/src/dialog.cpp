@@ -6,6 +6,7 @@
 #include <QDebug>
 
 #include <functional>
+#include <memory>
 
 #include "dialog.h"
 
@@ -292,8 +293,8 @@ void Dialog::calculate()
         return newNode;
     };
 
-    TreeNode<Matrix>* tree = fill(mTree);
-    AlghorithmAHP ahp(tree, mAlternatives.size());
+    std::unique_ptr<TreeNode<Matrix>> tree(fill(mTree));
+    AlgorithmAHP ahp(tree.get(), mAlternatives.size());
 
     QPair<int, QVector<double>> pair = ahp.answer();
 
@@ -306,5 +307,4 @@ void Dialog::calculate()
             QString::number(pair.second[pair.first]));
 
     QMessageBox::information(this, "Ответ", text, QMessageBox::Ok);
-    delete tree;
 }

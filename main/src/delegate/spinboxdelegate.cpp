@@ -102,7 +102,7 @@ void SpinBoxDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
 
     //Если матрица заполнена.
     qDebug() << "SpinBoxDelegate EMIT indicate" << endl;
-    emit indicate(AlghorithmAHP::getCR(mx));
+    emit indicate(AlgorithmAHP::getCR(mx));
 }
 
 

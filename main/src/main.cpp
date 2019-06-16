@@ -8,6 +8,7 @@
 
 
 
+
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
@@ -35,9 +36,11 @@ int main(int argc, char* argv[])
         {1, 1}
     };
 
-    qDebug() << "m1=" << AlghorithmAHP::getCR(m1);
-    qDebug() << "m2=" << AlghorithmAHP::getCR(m2);
-    qDebug() << "m2=" << AlghorithmAHP::getCR(m3);
+    qDebug() << "m1=" << AlgorithmAHP::getCR(m1);
+    qDebug() << "m2=" << AlgorithmAHP::getCR(m2);
+    qDebug() << "m2=" << AlgorithmAHP::getCR(m3);
+
+//    QTest::qExec(new AlghorithmAHP_Test, argc, argv);
 
 
     return app.exec();

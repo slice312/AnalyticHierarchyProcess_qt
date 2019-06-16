@@ -6,7 +6,8 @@
 
 
 
-AlghorithmAHP::AlghorithmAHP(const TreeNode<Matrix>* tree, uint alternatives)
+
+AlgorithmAHP::AlgorithmAHP(const TreeNode<Matrix>* tree, uint alternatives)
 {
     this->_alternatives = alternatives;
 
@@ -35,7 +36,7 @@ AlghorithmAHP::AlghorithmAHP(const TreeNode<Matrix>* tree, uint alternatives)
 
 
 
-AlghorithmAHP::~AlghorithmAHP()
+AlgorithmAHP::~AlgorithmAHP()
 {
     delete mConsistencyRatio;
     delete mTreeWeights;
@@ -43,7 +44,7 @@ AlghorithmAHP::~AlghorithmAHP()
 
 
 
-double AlghorithmAHP::getCR(const Matrix& m)
+double AlgorithmAHP::getCR(const Matrix& m)
 {
     Matrix normalized = m.normalize();
     QVector<double> avr = normalized.avrRows();
@@ -52,7 +53,7 @@ double AlghorithmAHP::getCR(const Matrix& m)
 
 
 
-QPair<uint, QVector<double>> AlghorithmAHP::answer()
+QPair<uint, QVector<double>> AlgorithmAHP::answer()
 {
     QVector<double> result = weightForEachAlternative();
     double max = 0.0;
@@ -72,7 +73,7 @@ QPair<uint, QVector<double>> AlghorithmAHP::answer()
 
 
 
-QVector<double> AlghorithmAHP::weightForEachAlternative()
+QVector<double> AlgorithmAHP::weightForEachAlternative()
 {
     QVector<double> result;
     for (uint i = 0; i < _alternatives; i++)
@@ -82,10 +83,10 @@ QVector<double> AlghorithmAHP::weightForEachAlternative()
 
 
 
-double AlghorithmAHP::combinedWeighting(const TreeNode<double>* weights, uint alt)
+double AlgorithmAHP::combinedWeighting(const TreeNode<double>* weights, uint alt)
 {
     //остановить не предпоследнем уровне
-    if (weights->childs[0]->childs.isEmpty())
+    if (weights->childs.first()->childs.isEmpty())
         return weights->childs[alt]->data;
 
     double sum = 0.0;
@@ -104,7 +105,7 @@ double AlghorithmAHP::combinedWeighting(const TreeNode<double>* weights, uint al
  * \param avrRows                 относительные весовые коэффициенты
  * \return индекс согласованности CR
  */
-double AlghorithmAHP::calcConsistencyRatio(const Matrix& m, const QVector<double>& weights)
+double AlgorithmAHP::calcConsistencyRatio(const Matrix& m, const QVector<double>& weights)
 {
     QVector<double> vec = m * weights;
     double nmax = std::accumulate(vec.begin(), vec.end(), 0.0);
@@ -115,7 +116,7 @@ double AlghorithmAHP::calcConsistencyRatio(const Matrix& m, const QVector<double
     double CR = CI / RI;
 
     if (std::isinf(CR) || std::isnan(CR))
-        CR = 0;
+        CR = 0.0;
     return CR;
 }
 
